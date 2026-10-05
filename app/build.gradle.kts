@@ -1,10 +1,21 @@
+import java.io.FileInputStream
+import java.util.Properties
+
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.compose)
 }
 
+val keystorePropertiesFile = rootProject.file("keystore.properties")
+val keystoreProperties = Properties()
+
+if (keystorePropertiesFile.exists()) {
+    keystoreProperties.load(FileInputStream(keystorePropertiesFile))
+}
+
 android {
     namespace = "com.raulcatalinas.shopping"
+
     compileSdk {
         version = release(37)
     }
@@ -19,18 +30,46 @@ android {
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
-    buildTypes {
-        release {
-            optimization {
-                enable = true
-                packageScope = setOf("androidx.**", "kotlin.**", "kotlinx.**")
+    signingConfigs {
+        if (keystorePropertiesFile.exists()) {
+            create("release") {
+                storePassword = keystoreProperties.getProperty("storePassword")
+                keyPassword = keystoreProperties.getProperty("keyPassword")
+                keyAlias = keystoreProperties.getProperty("keyAlias")
+                storeFile = rootProject.file(
+                    keystoreProperties.getProperty("storeFile")
+                )
             }
         }
     }
+
+    buildTypes {
+        release {
+            if (!keystorePropertiesFile.exists()) {
+                throw GradleException(
+                    "keystore.properties not found. " +
+                            "Cannot build the release without signing configuration."
+                )
+            }
+
+            signingConfig = signingConfigs.getByName("release")
+            isMinifyEnabled = true
+            isShrinkResources = true
+            isProfileable = false
+            isDebuggable = false
+            isJniDebuggable = false
+
+            optimization {
+                enable = true
+            }
+        }
+    }
+
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_11
         targetCompatibility = JavaVersion.VERSION_11
     }
+
     buildFeatures {
         compose = true
     }
@@ -39,6 +78,7 @@ android {
 dependencies {
     implementation(platform(libs.androidx.compose.bom))
     implementation(libs.androidx.activity.compose)
+    implementation(libs.androidx.compose.material.icons.extended)
     implementation(libs.androidx.compose.material3)
     implementation(libs.androidx.compose.material3.adaptive.navigation.suite)
     implementation(libs.androidx.compose.ui)
@@ -47,7 +87,6 @@ dependencies {
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
     testImplementation(libs.junit)
-    androidTestImplementation(platform(libs.androidx.compose.bom))
     androidTestImplementation(libs.androidx.compose.ui.test.junit4)
     androidTestImplementation(libs.androidx.espresso.core)
     androidTestImplementation(libs.androidx.junit)
