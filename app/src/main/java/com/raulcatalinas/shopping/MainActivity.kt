@@ -4,10 +4,11 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Home
+import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.Icon
-import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.adaptive.navigationsuite.NavigationSuiteScaffold
 import androidx.compose.runtime.Composable
@@ -16,16 +17,20 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.tooling.preview.PreviewScreenSizes
+import androidx.compose.ui.unit.dp
+import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
+import com.raulcatalinas.shopping.screens.home.HomeScreen
+import com.raulcatalinas.shopping.screens.settings.SettingsScreen
 import com.raulcatalinas.shopping.ui.theme.ShoppingTheme
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
+        installSplashScreen()
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
+
         setContent {
             ShoppingTheme {
                 ShoppingApp()
@@ -45,8 +50,9 @@ fun ShoppingApp() {
                 item(
                     icon = {
                         Icon(
-                            painterResource(it.icon),
-                            contentDescription = it.label
+                            it.icon,
+                            contentDescription = it.label,
+                            modifier = Modifier.size(it.iconSize.dp)
                         )
                     },
                     label = { Text(it.label) },
@@ -56,36 +62,26 @@ fun ShoppingApp() {
             }
         }
     ) {
-        Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
-            Greeting(
-                name = "Android",
-                modifier = Modifier.padding(innerPadding)
-            )
-        }
+        currentDestination.screen()
     }
 }
 
 enum class AppDestinations(
     val label: String,
-    val icon: Int,
+    val icon: ImageVector,
+    var iconSize: Int,
+    val screen: @Composable () -> Unit
 ) {
-    HOME("Home", R.drawable.ic_home),
-    FAVORITES("Favorites", R.drawable.ic_favorite),
-    PROFILE("Profile", R.drawable.ic_account_box),
-}
-
-@Composable
-fun Greeting(name: String, modifier: Modifier = Modifier) {
-    Text(
-        text = "Hello $name!",
-        modifier = modifier
-    )
-}
-
-@Preview(showBackground = true)
-@Composable
-fun GreetingPreview() {
-    ShoppingTheme {
-        Greeting("Android")
-    }
+    HOME(
+        "Home",
+        Icons.Default.Home,
+        24,
+        { HomeScreen() }
+    ),
+    SETTINGS(
+        "Settings",
+        Icons.Default.Settings,
+        24,
+        { SettingsScreen() }
+    ),
 }
