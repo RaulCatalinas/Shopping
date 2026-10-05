@@ -21,10 +21,14 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.tooling.preview.PreviewScreenSizes
 import androidx.compose.ui.unit.dp
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import com.raulcatalinas.shopping.screens.home.HomeScreen
 import com.raulcatalinas.shopping.screens.settings.SettingsScreen
+import com.raulcatalinas.shopping.screens.settings.viewmodels.SettingsViewModel
 import com.raulcatalinas.shopping.ui.theme.ShoppingTheme
+import dagger.hilt.android.AndroidEntryPoint
 
+@AndroidEntryPoint
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         installSplashScreen()
@@ -32,7 +36,9 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
 
         setContent {
-            ShoppingTheme {
+            val viewModel: SettingsViewModel = hiltViewModel()
+
+            ShoppingTheme(theme = viewModel.settings.theme) {
                 ShoppingApp()
             }
         }
@@ -69,7 +75,7 @@ fun ShoppingApp() {
 enum class AppDestinations(
     val label: String,
     val icon: ImageVector,
-    var iconSize: Int,
+    val iconSize: Int,
     val screen: @Composable () -> Unit
 ) {
     HOME(
