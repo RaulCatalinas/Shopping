@@ -176,6 +176,13 @@ enum class AppDestinations(
         requiresAuth = true,
         content = { HomeScreen() }
     ),
+    PROFILE(
+        label = "Profile",
+        icon = Icons.Default.Person,
+        iconSize = 24,
+        requiresAuth = true,
+        content = { ProfileScreen() }
+    ),
     SETTINGS(
         label = "Settings",
         icon = Icons.Default.Settings,
@@ -183,11 +190,4 @@ enum class AppDestinations(
         requiresAuth = false,
         content = { SettingsScreen() }
     ),
-    PROFILE(
-        label = "Profile",
-        icon = Icons.Default.Person,
-        iconSize = 24,
-        requiresAuth = true,
-        content = { ProfileScreen() }
-    )
 }
