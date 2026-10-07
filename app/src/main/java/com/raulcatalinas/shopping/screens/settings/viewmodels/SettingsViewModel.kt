@@ -9,8 +9,10 @@ import com.raulcatalinas.shopping.screens.settings.types.AppSettings
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 import javax.inject.Inject
 
 @HiltViewModel
@@ -18,11 +20,15 @@ class SettingsViewModel @Inject constructor(
     private val settingsRepository: SettingsRepository
 ) : ViewModel() {
 
+    private val initialSettings: AppSettings = runBlocking {
+        settingsRepository.getSettings().first()
+    }
+
     val settings: StateFlow<AppSettings> = settingsRepository.getSettings()
         .stateIn(
             scope = viewModelScope,
-            started = SharingStarted.WhileSubscribed(5000),
-            initialValue = AppSettings()
+            started = SharingStarted.Eagerly,
+            initialValue = initialSettings
         )
 
     fun setTheme(theme: ThemeOptions) {
