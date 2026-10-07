@@ -1,4 +1,4 @@
-package com.raulcatalinas.shopping.screens.di
+package com.raulcatalinas.shopping.di
 
 import android.content.Context
 import androidx.datastore.preferences.preferencesDataStore
