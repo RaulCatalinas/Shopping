@@ -88,7 +88,10 @@ fun ShoppingApp(
                 val isSelected = currentRoute == destination.name ||
                         (currentRoute == "AUTH" && destination == AppDestinations.HOME)
 
+                val isItemEnabled = destination.enabled || authState is AuthState.Authenticated
+
                 item(
+                    enabled = isItemEnabled,
                     icon = {
                         Icon(
                             imageVector = destination.icon,
@@ -167,7 +170,8 @@ enum class AppDestinations(
     val icon: ImageVector,
     val iconSize: Int,
     val requiresAuth: Boolean,
-    val content: @Composable () -> Unit
+    val enabled: Boolean = true,
+    val content: @Composable () -> Unit,
 ) {
     HOME(
         label = "Home",
@@ -181,6 +185,7 @@ enum class AppDestinations(
         icon = Icons.Default.Person,
         iconSize = 24,
         requiresAuth = true,
+        enabled = false,
         content = { ProfileScreen() }
     ),
     SETTINGS(
