@@ -53,10 +53,12 @@ class MainActivity : ComponentActivity() {
 
         setContent {
             val settingsViewModel: SettingsViewModel = hiltViewModel()
+
+            val settings by settingsViewModel.settings.collectAsStateWithLifecycle()
             val authState by authViewModel.authState.collectAsStateWithLifecycle()
 
             ShoppingTheme(
-                theme = settingsViewModel.settings.theme
+                theme = settings.theme
             ) {
                 when (authState) {
                     AuthState.Loading -> {}
