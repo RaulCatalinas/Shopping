@@ -166,4 +166,27 @@ class AuthViewModel @Inject constructor(
             onResult(success)
         }
     }
+
+    fun deleteAccount(onResult: (Boolean) -> Unit) {
+        viewModelScope.launch {
+            _isLoading.value = true
+            val success = try {
+                authRepository.deleteAccount()
+
+                true
+            } catch (e: Exception) {
+                Log.e(
+                    AUTH_VIEW_MODEL_TAG,
+                    "Error deleting account: ${e.message}",
+                    e
+                )
+
+                false
+            }
+
+            _isLoading.value = false
+
+            onResult(success)
+        }
+    }
 }

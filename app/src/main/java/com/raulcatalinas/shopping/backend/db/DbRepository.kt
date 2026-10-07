@@ -1,5 +1,6 @@
 package com.raulcatalinas.shopping.backend.db
 
+import com.raulcatalinas.shopping.backend.constants.DELETE_USER_RPC
 import com.raulcatalinas.shopping.backend.db.constants.IdColumn
 import com.raulcatalinas.shopping.backend.db.constants.ListIdColumn
 import com.raulcatalinas.shopping.backend.db.constants.TABLE_SHOPPING_ELEMENTS
@@ -107,5 +108,16 @@ class DbRepository @Inject constructor(
                 select()
             }
             .decodeSingleOrNull<UserProfileDto>()
+    }
+
+    suspend fun deleteAccount(userId: String) {
+        db.from(TABLE_SHOPPING_PROFILES)
+            .delete {
+                filter {
+                    eq(IdColumn, userId)
+                }
+            }
+
+        db.rpc(DELETE_USER_RPC)
     }
 }

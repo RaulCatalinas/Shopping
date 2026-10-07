@@ -8,6 +8,7 @@ import androidx.activity.viewModels
 import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Home
+import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
@@ -31,6 +32,7 @@ import com.raulcatalinas.shopping.backend.auth.viewmodels.AuthState
 import com.raulcatalinas.shopping.backend.auth.viewmodels.AuthViewModel
 import com.raulcatalinas.shopping.screens.auth.AuthScreen
 import com.raulcatalinas.shopping.screens.home.HomeScreen
+import com.raulcatalinas.shopping.screens.profile.ProfileScreen
 import com.raulcatalinas.shopping.screens.settings.SettingsScreen
 import com.raulcatalinas.shopping.screens.settings.viewmodels.SettingsViewModel
 import com.raulcatalinas.shopping.ui.theme.ShoppingTheme
@@ -180,5 +182,12 @@ enum class AppDestinations(
         iconSize = 24,
         requiresAuth = false,
         content = { SettingsScreen() }
+    ),
+    PROFILE(
+        label = "Profile",
+        icon = Icons.Default.Person,
+        iconSize = 24,
+        requiresAuth = true,
+        content = { ProfileScreen() }
     )
 }

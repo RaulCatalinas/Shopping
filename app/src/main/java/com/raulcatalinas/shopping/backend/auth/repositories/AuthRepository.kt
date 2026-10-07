@@ -45,14 +45,24 @@ class AuthRepository @Inject constructor(
         )
 
         dbRepository.createUserProfile(profile)
-            ?: throw IllegalStateException("Could not create user profile")
+            ?: throw IllegalStateException("Couldn't create user profile")
     }
 
     suspend fun signInWithGoogle() {
-        // Implementar posteriormente
+        println("Signing in with google...")
     }
 
     suspend fun signOut() {
         auth.signOut()
     }
+
+    suspend fun deleteAccount() {
+        val userId = getCurrentUser()?.id
+            ?: throw IllegalStateException("User ID was not returned")
+
+        dbRepository.deleteAccount(userId)
+        auth.signOut()
+    }
+
+    fun getCurrentUser() = auth.currentUserOrNull()
 }
