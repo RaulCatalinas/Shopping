@@ -1,5 +1,6 @@
 package com.raulcatalinas.shopping.screens.settings
 
+import android.annotation.SuppressLint
 import androidx.activity.ComponentActivity
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -21,7 +22,7 @@ import com.raulcatalinas.shopping.shared.components.SegmentedButton
 
 @Composable
 fun SettingsScreen(
-    // Obtenemos la instancia ligada a la Activity para reusar el ViewModel ya cargado
+    @SuppressLint("ContextCastToActivity")
     viewModel: SettingsViewModel = hiltViewModel(LocalContext.current as ComponentActivity)
 ) {
     val settings by viewModel.settings.collectAsStateWithLifecycle()
@@ -31,8 +32,9 @@ fun SettingsScreen(
     Scaffold { paddingValues ->
         Column(
             modifier = Modifier
-                .fillMaxWidth()
-                .padding(paddingValues),
+                .padding(paddingValues)
+                .padding(horizontal = 20.dp, vertical = 16.dp)
+                .fillMaxWidth(),
             verticalArrangement = Arrangement.spacedBy(16.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {

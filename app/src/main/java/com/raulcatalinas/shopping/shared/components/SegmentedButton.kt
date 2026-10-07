@@ -1,5 +1,6 @@
 package com.raulcatalinas.shopping.shared.components
 
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.SegmentedButton
 import androidx.compose.material3.SegmentedButtonDefaults
@@ -19,7 +20,9 @@ fun <T> SegmentedButton(
     modifier: Modifier = Modifier
 ) {
     SingleChoiceSegmentedButtonRow(
-        modifier = modifier.padding(16.dp)
+        modifier = modifier
+            .padding(16.dp)
+            .fillMaxWidth()
     ) {
         options.forEachIndexed { index, option ->
             SegmentedButton(

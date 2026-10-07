@@ -58,8 +58,9 @@ fun AuthScreen(viewModel: AuthViewModel = hiltViewModel()) {
     Scaffold { paddingValues ->
         Column(
             modifier = Modifier
-                .fillMaxWidth()
-                .padding(paddingValues),
+                .padding(paddingValues)
+                .padding(horizontal = 20.dp, vertical = 16.dp)
+                .fillMaxWidth(),
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
@@ -72,6 +73,7 @@ fun AuthScreen(viewModel: AuthViewModel = hiltViewModel()) {
 
             if (authMode == AuthMode.SIGN_UP) {
                 TextField(
+                    modifier = Modifier.fillMaxWidth(),
                     state = userNameState,
                     keyboardOptions = KeyboardOptions(
                         keyboardType = KeyboardType.Text
@@ -80,14 +82,18 @@ fun AuthScreen(viewModel: AuthViewModel = hiltViewModel()) {
                 )
             }
             TextField(
+                modifier = Modifier.fillMaxWidth(),
                 state = emailState,
+                enabled = !isLoading,
                 keyboardOptions = KeyboardOptions(
                     keyboardType = KeyboardType.Email
                 ),
-                placeholder = { Text("Email") }
+                placeholder = { Text("Email") },
             )
             SecureTextField(
+                modifier = Modifier.fillMaxWidth(),
                 state = passwordState,
+                enabled = !isLoading,
                 textObfuscationCharacter = '*',
                 textObfuscationMode = if (passwordHidden) {
                     TextObfuscationMode.RevealLastTyped
@@ -113,17 +119,24 @@ fun AuthScreen(viewModel: AuthViewModel = hiltViewModel()) {
                 placeholder = { Text("Password") }
             )
             if (authMode == AuthMode.LOGIN) {
-                TextButton(onClick = { println("Resetting password...") }) {
+                TextButton(
+                    modifier = Modifier.fillMaxWidth(),
+                    enabled = !isLoading,
+                    onClick = { println("Resetting password...") }
+                ) {
                     Text("Reset Password")
                 }
             }
             Button(
-                enabled = isAuthFormValid(
-                    authMode = authMode,
-                    email = emailState.text.toString(),
-                    password = passwordState.text.toString(),
-                    userName = userNameState.text.toString()
-                ),
+                modifier = Modifier.fillMaxWidth(),
+                enabled =
+                    !isLoading
+                            && isAuthFormValid(
+                        authMode = authMode,
+                        email = emailState.text.toString(),
+                        password = passwordState.text.toString(),
+                        userName = userNameState.text.toString()
+                    ),
                 onClick = {
                     val email = emailState.text.toString()
                     val password = passwordState.text.toString()
@@ -159,7 +172,9 @@ fun AuthScreen(viewModel: AuthViewModel = hiltViewModel()) {
             OutlinedButton(
                 modifier = Modifier
                     .wrapContentWidth()
-                    .padding(8.dp),
+                    .padding(8.dp)
+                    .fillMaxWidth(),
+                enabled = !isLoading,
                 onClick = {
                     viewModel.signInWithGoogle { success ->
                         println(
