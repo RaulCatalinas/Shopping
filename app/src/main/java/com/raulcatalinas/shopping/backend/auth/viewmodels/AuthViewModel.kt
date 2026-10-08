@@ -4,6 +4,7 @@ import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.raulcatalinas.shopping.backend.auth.repositories.AuthRepository
+import com.raulcatalinas.shopping.backend.auth.types.UsernameState
 import com.raulcatalinas.shopping.backend.auth.viewmodels.constants.AUTH_VIEW_MODEL_TAG
 import com.raulcatalinas.shopping.shared.utils.isValidEmail
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -16,14 +17,16 @@ import javax.inject.Inject
 
 @HiltViewModel
 class AuthViewModel @Inject constructor(
-    private val authRepository: AuthRepository
+    private val authRepository: AuthRepository,
 ) : ViewModel() {
 
     private val _authState = MutableStateFlow<AuthState>(AuthState.Loading)
     private val _isLoading = MutableStateFlow(false)
+    private val _usernameState = MutableStateFlow<UsernameState>(UsernameState.Idle)
 
     val isLoading = _isLoading.asStateFlow()
     val authState: StateFlow<AuthState> = _authState.asStateFlow()
+    val usernameState: StateFlow<UsernameState> = _usernameState.asStateFlow()
 
     init {
         observeAuthState()
@@ -170,6 +173,7 @@ class AuthViewModel @Inject constructor(
     fun deleteAccount(onResult: (Boolean) -> Unit) {
         viewModelScope.launch {
             _isLoading.value = true
+
             val success = try {
                 authRepository.deleteAccount()
 
@@ -189,4 +193,37 @@ class AuthViewModel @Inject constructor(
             onResult(success)
         }
     }
+
+    fun checkUserNameExists(userName: String) {
+        val cleanUsername = userName.trim()
+
+        viewModelScope.launch {
+            _usernameState.value = UsernameState.Checking
+
+            val result = authRepository.checkUserNameExists(cleanUsername)
+
+            if (result.isFailure) {
+                val exception = result.exceptionOrNull()
+
+                Log.e(
+                    AUTH_VIEW_MODEL_TAG,
+                    "Error checking username: ${exception?.message}",
+                    exception
+                )
+
+                _usernameState.value = UsernameState.Error(exception?.message ?: "Unknown error")
+
+                return@launch
+            }
+
+            val exists = result.getOrDefault(false)
+
+            _usernameState.value = if (exists) {
+                UsernameState.Taken(cleanUsername)
+            } else {
+                UsernameState.Available(cleanUsername)
+            }
+        }
+    }
 }
+

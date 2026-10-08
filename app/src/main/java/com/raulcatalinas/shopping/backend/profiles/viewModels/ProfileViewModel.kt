@@ -18,11 +18,18 @@ class ProfileViewModel @Inject constructor(
     var username by mutableStateOf("")
         private set
 
+    var initialUsername by mutableStateOf("")
+        private set
+
     var isLoading by mutableStateOf(false)
         private set
 
     fun onUsernameChange(newName: String) {
         username = newName
+    }
+
+    fun isSameAsInitialUsername(): Boolean {
+        return username.trim().equals(initialUsername.trim(), ignoreCase = true)
     }
 
     fun fetchUserProfile() {
@@ -32,8 +39,9 @@ class ProfileViewModel @Inject constructor(
             isLoading = true
             val profile = repository.getProfile()
 
-            profile?.userName?.let {
-                username = it
+            profile?.userName?.let { fetchedName ->
+                username = fetchedName
+                initialUsername = fetchedName
             }
             isLoading = false
         }
@@ -43,15 +51,21 @@ class ProfileViewModel @Inject constructor(
         viewModelScope.launch {
             if (username.isBlank()) {
                 onResult(false)
+
                 return@launch
             }
 
             isLoading = true
-            val success = repository.updateUsername(username)
+            val success = repository.updateUsername(username.trim())
 
-            if (!success) {
+            if (success) {
+                initialUsername = username.trim()
+            } else {
                 val originalProfile = repository.getProfile()
-                originalProfile?.userName?.let { username = it }
+                originalProfile?.userName?.let {
+                    username = it
+                    initialUsername = it
+                }
             }
 
             isLoading = false

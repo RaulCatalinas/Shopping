@@ -1,6 +1,9 @@
 package com.raulcatalinas.shopping.backend.db
 
-import com.raulcatalinas.shopping.backend.constants.DELETE_USER_RPC
+import android.util.Log
+import com.raulcatalinas.shopping.backend.db.constants.CHECK_USERNAME_EXISTS_RPC
+import com.raulcatalinas.shopping.backend.db.constants.DB_REPOSITORY_TAG
+import com.raulcatalinas.shopping.backend.db.constants.DELETE_USER_RPC
 import com.raulcatalinas.shopping.backend.db.constants.IdColumn
 import com.raulcatalinas.shopping.backend.db.constants.ListIdColumn
 import com.raulcatalinas.shopping.backend.db.constants.TABLE_SHOPPING_ELEMENTS
@@ -13,6 +16,8 @@ import com.raulcatalinas.shopping.shared.types.ShoppingElement
 import com.raulcatalinas.shopping.shared.types.ShoppingList
 import com.raulcatalinas.shopping.shared.types.UserProfile
 import io.github.jan.supabase.postgrest.Postgrest
+import kotlinx.serialization.json.buildJsonObject
+import kotlinx.serialization.json.put
 import javax.inject.Inject
 
 class DbRepository @Inject constructor(
@@ -119,5 +124,25 @@ class DbRepository @Inject constructor(
             }
 
         db.rpc(DELETE_USER_RPC)
+    }
+
+    suspend fun checkUserNameExists(userName: String): Result<Boolean> {
+        return try {
+            val exists = db.rpc(
+                function = CHECK_USERNAME_EXISTS_RPC,
+                parameters = buildJsonObject {
+                    put("p_username", userName.trim())
+                }
+            ).decodeAs<Boolean>()
+
+            Result.success(exists)
+        } catch (e: Exception) {
+            Log.e(
+                DB_REPOSITORY_TAG,
+                "Error checking username: ${e.message}",
+                e
+            )
+            Result.failure(e)
+        }
     }
 }

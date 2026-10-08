@@ -65,4 +65,8 @@ class AuthRepository @Inject constructor(
     }
 
     fun getCurrentUser() = auth.currentUserOrNull()
+
+    suspend fun checkUserNameExists(userName: String): Result<Boolean> {
+        return dbRepository.checkUserNameExists(userName)
+    }
 }
