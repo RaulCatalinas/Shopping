@@ -39,7 +39,7 @@ class ProfileViewModel @Inject constructor(
             isLoading = true
             val profile = repository.getProfile()
 
-            profile?.userName?.let { fetchedName ->
+            profile?.username?.let { fetchedName ->
                 username = fetchedName
                 initialUsername = fetchedName
             }
@@ -62,7 +62,7 @@ class ProfileViewModel @Inject constructor(
                 initialUsername = username.trim()
             } else {
                 val originalProfile = repository.getProfile()
-                originalProfile?.userName?.let {
+                originalProfile?.username?.let {
                     username = it
                     initialUsername = it
                 }
