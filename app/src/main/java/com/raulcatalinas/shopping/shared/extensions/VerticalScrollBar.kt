@@ -14,7 +14,7 @@ fun Modifier.verticalScrollbar(
     state: ScrollState,
     width: Dp = 4.dp,
     color: Color = Color.Gray.copy(alpha = 0.5f),
-    paddingEnd: Dp = (-30).dp
+    paddingEnd: Dp = (-8).dp
 ): Modifier {
     return drawWithContent {
         drawContent()
