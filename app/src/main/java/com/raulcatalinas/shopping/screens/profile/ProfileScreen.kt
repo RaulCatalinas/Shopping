@@ -142,7 +142,10 @@ fun ProfileScreen(
                     keyboardType = KeyboardType.Text
                 ),
                 placeholder = { Text("e.g. JohnDoe") },
-                isError = usernameState is UsernameState.Taken || usernameState is UsernameState.Error,
+                isError =
+                    usernameState is UsernameState.Taken
+                            || usernameState is UsernameState.Error
+                            || containsWhiteSpace,
                 supportingText = {
                     Row(
                         modifier = Modifier.fillMaxWidth(),
@@ -162,34 +165,44 @@ fun ProfileScreen(
                         }
                     }
                 },
-                trailingIcon = {
-                    if (!isSameUsername) {
-                        when (usernameState) {
-                            UsernameState.Checking -> {
-                                CircularProgressIndicator(
-                                    modifier = Modifier.size(18.dp),
-                                    strokeWidth = 2.dp
-                                )
-                            }
+                trailingIcon = trailingIcon@{
+                    if (isSameUsername) return@trailingIcon
+                    if (usernameTextFieldState.text.isBlank()) return@trailingIcon
+                    if (containsWhiteSpace) {
+                        Icon(
+                            imageVector = Icons.Default.Error,
+                            contentDescription = "Invalid username format",
+                            tint = Color(0xFFFF3B30)
+                        )
 
-                            is UsernameState.Available -> {
-                                Icon(
-                                    imageVector = Icons.Default.CheckCircle,
-                                    contentDescription = "Username available",
-                                    tint = Color(0xFF34C759)
-                                )
-                            }
+                        return@trailingIcon
+                    }
 
-                            is UsernameState.Taken, is UsernameState.Error -> {
-                                Icon(
-                                    imageVector = Icons.Default.Error,
-                                    contentDescription = "Username unavailable",
-                                    tint = Color(0xFFFF3B30)
-                                )
-                            }
-
-                            else -> {}
+                    when (usernameState) {
+                        UsernameState.Checking -> {
+                            CircularProgressIndicator(
+                                modifier = Modifier.size(18.dp),
+                                strokeWidth = 2.dp
+                            )
                         }
+
+                        is UsernameState.Available -> {
+                            Icon(
+                                imageVector = Icons.Default.CheckCircle,
+                                contentDescription = "Username available",
+                                tint = Color(0xFF34C759)
+                            )
+                        }
+
+                        is UsernameState.Taken, is UsernameState.Error -> {
+                            Icon(
+                                imageVector = Icons.Default.Error,
+                                contentDescription = "Username unavailable",
+                                tint = Color(0xFFFF3B30)
+                            )
+                        }
+
+                        else -> {}
                     }
                 }
             )

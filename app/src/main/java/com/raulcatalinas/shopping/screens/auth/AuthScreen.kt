@@ -133,7 +133,10 @@ fun AuthScreen(viewModel: AuthViewModel = hiltViewModel()) {
                     keyboardOptions = KeyboardOptions(
                         keyboardType = KeyboardType.Text
                     ),
-                    isError = usernameState is UsernameState.Taken || usernameState is UsernameState.Error,
+                    isError =
+                        usernameState is UsernameState.Taken
+                                || usernameState is UsernameState.Error
+                                || containsWhiteSpace,
                     placeholder = { Text("Username") },
                     supportingText = {
                         Row(
@@ -154,7 +157,18 @@ fun AuthScreen(viewModel: AuthViewModel = hiltViewModel()) {
                             }
                         }
                     },
-                    trailingIcon = {
+                    trailingIcon = trailingIcon@{
+                        if (usernameTextFieldState.text.isBlank()) return@trailingIcon
+                        if (containsWhiteSpace) {
+                            Icon(
+                                imageVector = Icons.Default.Error,
+                                contentDescription = "Invalid username format",
+                                tint = Color(0xFFFF3B30)
+                            )
+
+                            return@trailingIcon
+                        }
+
                         when (usernameState) {
                             UsernameState.Checking -> {
                                 CircularProgressIndicator(
