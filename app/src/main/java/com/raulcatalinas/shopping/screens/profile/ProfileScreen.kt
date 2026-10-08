@@ -48,6 +48,7 @@ import com.raulcatalinas.shopping.backend.auth.viewmodels.AuthViewModel
 import com.raulcatalinas.shopping.backend.profiles.viewModels.ProfileViewModel
 import com.raulcatalinas.shopping.shared.components.CharacterCounter
 import com.raulcatalinas.shopping.shared.components.ConfirmDialog
+import com.raulcatalinas.shopping.shared.components.RequiredFieldsNote
 import com.raulcatalinas.shopping.shared.components.SectionHeader
 import com.raulcatalinas.shopping.shared.components.UserWarning
 import com.raulcatalinas.shopping.shared.extensions.containsWhiteSpace
@@ -132,6 +133,8 @@ fun ProfileScreen(
             Spacer(modifier = Modifier.height(8.dp))
 
             SectionHeader(title = "Profile details")
+
+            RequiredFieldsNote()
 
             OutlinedTextField(
                 modifier = Modifier.fillMaxWidth(),

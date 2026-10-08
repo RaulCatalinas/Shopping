@@ -50,6 +50,7 @@ import com.raulcatalinas.shopping.backend.auth.types.UsernameState
 import com.raulcatalinas.shopping.backend.auth.viewmodels.AuthViewModel
 import com.raulcatalinas.shopping.screens.auth.enums.AuthMode
 import com.raulcatalinas.shopping.shared.components.CharacterCounter
+import com.raulcatalinas.shopping.shared.components.RequiredFieldsNote
 import com.raulcatalinas.shopping.shared.components.SegmentedButton
 import com.raulcatalinas.shopping.shared.components.UserWarning
 import com.raulcatalinas.shopping.shared.extensions.containsWhiteSpace
@@ -123,6 +124,8 @@ fun AuthScreen(viewModel: AuthViewModel = hiltViewModel()) {
                 onOptionSelected = { authMode = it },
                 label = { it.label }
             )
+
+            RequiredFieldsNote()
 
             if (authMode == AuthMode.SIGN_UP) {
                 TextField(
