@@ -7,9 +7,11 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.wrapContentWidth
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.text.input.TextObfuscationMode
 import androidx.compose.foundation.text.input.rememberTextFieldState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material.icons.filled.VisibilityOff
@@ -41,26 +43,30 @@ import com.raulcatalinas.shopping.backend.auth.utils.isAuthFormValid
 import com.raulcatalinas.shopping.backend.auth.viewmodels.AuthViewModel
 import com.raulcatalinas.shopping.screens.auth.enums.AuthMode
 import com.raulcatalinas.shopping.shared.components.SegmentedButton
+import com.raulcatalinas.shopping.shared.extensions.verticalScrollbar
 import com.raulcatalinas.shopping.shared.utils.showToast
 
 @Composable
 fun AuthScreen(viewModel: AuthViewModel = hiltViewModel()) {
     val context = LocalContext.current
+
     val isLoading by viewModel.isLoading.collectAsStateWithLifecycle()
-
     var authMode by rememberSaveable { mutableStateOf(AuthMode.LOGIN) }
-
     var passwordHidden by rememberSaveable { mutableStateOf(true) }
+
     val userNameState = rememberTextFieldState()
     val emailState = rememberTextFieldState()
     val passwordState = rememberTextFieldState()
+    val scrollState = rememberScrollState()
 
     Scaffold { paddingValues ->
         Column(
             modifier = Modifier
                 .padding(paddingValues)
                 .padding(horizontal = 20.dp, vertical = 16.dp)
-                .fillMaxWidth(),
+                .fillMaxWidth()
+                .verticalScrollbar(scrollState)
+                .verticalScroll(scrollState),
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {

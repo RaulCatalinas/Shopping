@@ -7,6 +7,8 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
@@ -31,6 +33,7 @@ import com.raulcatalinas.shopping.backend.auth.viewmodels.AuthViewModel
 import com.raulcatalinas.shopping.backend.profiles.viewModels.ProfileViewModel
 import com.raulcatalinas.shopping.shared.components.ConfirmDialog
 import com.raulcatalinas.shopping.shared.components.SectionHeader
+import com.raulcatalinas.shopping.shared.extensions.verticalScrollbar
 import com.raulcatalinas.shopping.shared.utils.showToast
 
 @Composable
@@ -39,6 +42,8 @@ fun ProfileScreen(
     profileViewModel: ProfileViewModel = hiltViewModel()
 ) {
     val context = LocalContext.current
+
+    val scrollState = rememberScrollState()
 
     var showSignOutDialog by remember { mutableStateOf(false) }
     var showDeleteAccountDialog by remember { mutableStateOf(false) }
@@ -52,7 +57,9 @@ fun ProfileScreen(
             modifier = Modifier
                 .padding(paddingValues)
                 .padding(horizontal = 20.dp, vertical = 16.dp)
-                .fillMaxWidth(),
+                .fillMaxWidth()
+                .verticalScrollbar(scrollState)
+                .verticalScroll(scrollState),
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
