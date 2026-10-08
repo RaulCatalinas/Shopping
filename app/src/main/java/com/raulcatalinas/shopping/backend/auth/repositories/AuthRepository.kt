@@ -41,7 +41,7 @@ class AuthRepository @Inject constructor(
 
         val profile = UserProfile(
             id = userId,
-            userName = userName
+            userName = userName.trim()
         )
 
         dbRepository.createUserProfile(profile)
