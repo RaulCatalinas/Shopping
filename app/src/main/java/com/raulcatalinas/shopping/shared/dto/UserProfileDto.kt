@@ -7,8 +7,7 @@ import kotlin.time.Instant
 @Serializable
 data class UserProfileDto(
     val id: String,
-    @SerialName("user_name")
-    val userName: String,
+    val username: String,
     @SerialName("created_at")
     val createdAt: Instant? = null,
     @SerialName("updated_at")
