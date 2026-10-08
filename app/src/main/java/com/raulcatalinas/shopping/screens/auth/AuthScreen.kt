@@ -29,11 +29,13 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -53,7 +55,12 @@ import com.raulcatalinas.shopping.shared.components.UserWarning
 import com.raulcatalinas.shopping.shared.extensions.containsWhiteSpace
 import com.raulcatalinas.shopping.shared.extensions.verticalScrollbar
 import com.raulcatalinas.shopping.shared.utils.showToast
+import kotlinx.coroutines.FlowPreview
+import kotlinx.coroutines.flow.debounce
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlin.time.Duration.Companion.milliseconds
 
+@OptIn(FlowPreview::class)
 @Composable
 fun AuthScreen(viewModel: AuthViewModel = hiltViewModel()) {
     val context = LocalContext.current
@@ -84,6 +91,19 @@ fun AuthScreen(viewModel: AuthViewModel = hiltViewModel()) {
         userNameMinimumCharsReached && passwordMinimumCharsReached && isUsernameValid
     } else {
         passwordMinimumCharsReached
+    }
+
+    LaunchedEffect(usernameTextFieldState) {
+        snapshotFlow { usernameTextFieldState.text.toString().trim() }
+            .distinctUntilChanged()
+            .debounce(400.milliseconds)
+            .collect { query ->
+                if (query.length < 3 || query.containsWhiteSpace()) {
+                    return@collect
+                }
+
+                viewModel.checkUserNameExists(query)
+            }
     }
 
     Scaffold { paddingValues ->
@@ -128,12 +148,7 @@ fun AuthScreen(viewModel: AuthViewModel = hiltViewModel()) {
                                 minimumCharacterCount = 3,
                                 counterText = "$usernameLength / 3 min",
                                 onTooShort = { userNameMinimumCharsReached = false },
-                                onMinimumReached = {
-                                    userNameMinimumCharsReached = true
-                                    viewModel.checkUserNameExists(
-                                        usernameTextFieldState.text.toString().trim()
-                                    )
-                                }
+                                onMinimumReached = { userNameMinimumCharsReached = true }
                             ) {
                                 usernameLength = it
                             }

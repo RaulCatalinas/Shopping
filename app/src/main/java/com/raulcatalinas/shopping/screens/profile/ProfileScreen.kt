@@ -53,7 +53,12 @@ import com.raulcatalinas.shopping.shared.components.UserWarning
 import com.raulcatalinas.shopping.shared.extensions.containsWhiteSpace
 import com.raulcatalinas.shopping.shared.extensions.verticalScrollbar
 import com.raulcatalinas.shopping.shared.utils.showToast
+import kotlinx.coroutines.FlowPreview
+import kotlinx.coroutines.flow.debounce
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlin.time.Duration.Companion.milliseconds
 
+@OptIn(FlowPreview::class)
 @Composable
 fun ProfileScreen(
     authViewModel: AuthViewModel = hiltViewModel(),
@@ -89,9 +94,21 @@ fun ProfileScreen(
     }
 
     LaunchedEffect(usernameTextFieldState) {
-        snapshotFlow { usernameTextFieldState.text.toString() }
+        snapshotFlow { usernameTextFieldState.text.toString().trim() }
+            .distinctUntilChanged()
+            .debounce(400.milliseconds)
             .collect { newUsername ->
                 profileViewModel.onUsernameChange(newUsername)
+
+                if (
+                    newUsername.length < 3
+                    || newUsername.containsWhiteSpace()
+                    || profileViewModel.isSameAsInitialUsername()
+                ) {
+                    return@collect
+                }
+
+                authViewModel.checkUserNameExists(newUsername)
             }
     }
 
@@ -139,12 +156,7 @@ fun ProfileScreen(
                             minimumCharacterCount = 3,
                             counterText = "$usernameLength / 3 min",
                             onTooShort = { userNameMinimumCharsReached = false },
-                            onMinimumReached = {
-                                userNameMinimumCharsReached = true
-                                authViewModel.checkUserNameExists(
-                                    usernameTextFieldState.text.toString().trim()
-                                )
-                            }
+                            onMinimumReached = { userNameMinimumCharsReached = true }
                         ) {
                             usernameLength = it
                         }
