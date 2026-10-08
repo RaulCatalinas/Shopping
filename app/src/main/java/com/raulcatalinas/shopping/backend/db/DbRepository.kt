@@ -9,6 +9,7 @@ import com.raulcatalinas.shopping.backend.db.constants.ListIdColumn
 import com.raulcatalinas.shopping.backend.db.constants.TABLE_SHOPPING_ELEMENTS
 import com.raulcatalinas.shopping.backend.db.constants.TABLE_SHOPPING_LISTS
 import com.raulcatalinas.shopping.backend.db.constants.TABLE_SHOPPING_PROFILES
+import com.raulcatalinas.shopping.backend.db.dto.CheckUsernameParams
 import com.raulcatalinas.shopping.shared.dto.ShoppingElementDto
 import com.raulcatalinas.shopping.shared.dto.ShoppingListDto
 import com.raulcatalinas.shopping.shared.dto.UserProfileDto
@@ -16,8 +17,7 @@ import com.raulcatalinas.shopping.shared.types.ShoppingElement
 import com.raulcatalinas.shopping.shared.types.ShoppingList
 import com.raulcatalinas.shopping.shared.types.UserProfile
 import io.github.jan.supabase.postgrest.Postgrest
-import kotlinx.serialization.json.buildJsonObject
-import kotlinx.serialization.json.put
+import io.github.jan.supabase.postgrest.rpc
 import javax.inject.Inject
 
 class DbRepository @Inject constructor(
@@ -130,9 +130,9 @@ class DbRepository @Inject constructor(
         return try {
             val exists = db.rpc(
                 function = CHECK_USERNAME_EXISTS_RPC,
-                parameters = buildJsonObject {
-                    put("p_username", userName.trim())
-                }
+                parameters = CheckUsernameParams(
+                    username = userName.trim()
+                )
             ).decodeAs<Boolean>()
 
             Result.success(exists)
