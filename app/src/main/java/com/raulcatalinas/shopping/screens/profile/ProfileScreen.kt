@@ -2,6 +2,7 @@ package com.raulcatalinas.shopping.screens.profile
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -48,6 +49,8 @@ import com.raulcatalinas.shopping.backend.profiles.viewModels.ProfileViewModel
 import com.raulcatalinas.shopping.shared.components.CharacterCounter
 import com.raulcatalinas.shopping.shared.components.ConfirmDialog
 import com.raulcatalinas.shopping.shared.components.SectionHeader
+import com.raulcatalinas.shopping.shared.components.UserWarning
+import com.raulcatalinas.shopping.shared.extensions.containsWhiteSpace
 import com.raulcatalinas.shopping.shared.extensions.verticalScrollbar
 import com.raulcatalinas.shopping.shared.utils.showToast
 
@@ -69,7 +72,14 @@ fun ProfileScreen(
     var usernameLength by rememberSaveable { mutableIntStateOf(0) }
 
     val isSameUsername = profileViewModel.isSameAsInitialUsername()
-    val isUsernameValid = isSameUsername || usernameState is UsernameState.Available
+    val containsWhiteSpace =
+        usernameTextFieldState
+            .text
+            .toString()
+            .containsWhiteSpace()
+    val isUsernameValid =
+        (isSameUsername || usernameState is UsernameState.Available)
+                && !containsWhiteSpace
 
     val canSave =
         !profileViewModel.isLoading && userNameMinimumCharsReached && isUsernameValid && !isSameUsername
@@ -106,64 +116,71 @@ fun ProfileScreen(
 
             SectionHeader(title = "Profile details")
 
-            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                OutlinedTextField(
-                    modifier = Modifier.fillMaxWidth(),
-                    state = usernameTextFieldState,
-                    enabled = !profileViewModel.isLoading,
-                    lineLimits = TextFieldLineLimits.SingleLine,
-                    keyboardOptions = KeyboardOptions(
-                        keyboardType = KeyboardType.Text
-                    ),
-                    placeholder = { Text("e.g. JohnDoe") },
-                    isError = usernameState is UsernameState.Taken || usernameState is UsernameState.Error,
-                    trailingIcon = {
-                        if (!isSameUsername) {
-                            when (usernameState) {
-                                UsernameState.Checking -> {
-                                    CircularProgressIndicator(
-                                        modifier = Modifier.size(18.dp),
-                                        strokeWidth = 2.dp
-                                    )
-                                }
+            OutlinedTextField(
+                modifier = Modifier.fillMaxWidth(),
+                state = usernameTextFieldState,
+                enabled = !profileViewModel.isLoading,
+                lineLimits = TextFieldLineLimits.SingleLine,
+                keyboardOptions = KeyboardOptions(
+                    keyboardType = KeyboardType.Text
+                ),
+                placeholder = { Text("e.g. JohnDoe") },
+                isError = usernameState is UsernameState.Taken || usernameState is UsernameState.Error,
+                supportingText = {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        UserWarning("No spaces allowed")
 
-                                is UsernameState.Available -> {
-                                    Icon(
-                                        imageVector = Icons.Default.CheckCircle,
-                                        contentDescription = "Username available",
-                                        tint = Color(0xFF34C759)
-                                    )
-                                }
-
-                                is UsernameState.Taken, is UsernameState.Error -> {
-                                    Icon(
-                                        imageVector = Icons.Default.Error,
-                                        contentDescription = "Username unavailable",
-                                        tint = Color(0xFFFF3B30)
-                                    )
-                                }
-
-                                else -> {}
+                        CharacterCounter(
+                            state = usernameTextFieldState,
+                            minimumCharacterCount = 3,
+                            counterText = "$usernameLength / 3 min",
+                            onTooShort = { userNameMinimumCharsReached = false },
+                            onMinimumReached = {
+                                userNameMinimumCharsReached = true
+                                authViewModel.checkUserNameExists(
+                                    usernameTextFieldState.text.toString().trim()
+                                )
                             }
+                        ) {
+                            usernameLength = it
                         }
                     }
-                )
+                },
+                trailingIcon = {
+                    if (!isSameUsername) {
+                        when (usernameState) {
+                            UsernameState.Checking -> {
+                                CircularProgressIndicator(
+                                    modifier = Modifier.size(18.dp),
+                                    strokeWidth = 2.dp
+                                )
+                            }
 
-                CharacterCounter(
-                    state = usernameTextFieldState,
-                    minimumCharacterCount = 3,
-                    counterText = "$usernameLength / 3 min",
-                    onTooShort = { userNameMinimumCharsReached = false },
-                    onMinimumReached = {
-                        userNameMinimumCharsReached = true
-                        authViewModel.checkUserNameExists(
-                            usernameTextFieldState.text.toString().trim()
-                        )
+                            is UsernameState.Available -> {
+                                Icon(
+                                    imageVector = Icons.Default.CheckCircle,
+                                    contentDescription = "Username available",
+                                    tint = Color(0xFF34C759)
+                                )
+                            }
+
+                            is UsernameState.Taken, is UsernameState.Error -> {
+                                Icon(
+                                    imageVector = Icons.Default.Error,
+                                    contentDescription = "Username unavailable",
+                                    tint = Color(0xFFFF3B30)
+                                )
+                            }
+
+                            else -> {}
+                        }
                     }
-                ) {
-                    usernameLength = it
                 }
-            }
+            )
 
             OutlinedButton(
                 modifier = Modifier.fillMaxWidth(),

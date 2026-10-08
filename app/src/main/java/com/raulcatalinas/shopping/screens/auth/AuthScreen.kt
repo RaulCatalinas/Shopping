@@ -49,6 +49,8 @@ import com.raulcatalinas.shopping.backend.auth.viewmodels.AuthViewModel
 import com.raulcatalinas.shopping.screens.auth.enums.AuthMode
 import com.raulcatalinas.shopping.shared.components.CharacterCounter
 import com.raulcatalinas.shopping.shared.components.SegmentedButton
+import com.raulcatalinas.shopping.shared.components.UserWarning
+import com.raulcatalinas.shopping.shared.extensions.containsWhiteSpace
 import com.raulcatalinas.shopping.shared.extensions.verticalScrollbar
 import com.raulcatalinas.shopping.shared.utils.showToast
 
@@ -71,7 +73,13 @@ fun AuthScreen(viewModel: AuthViewModel = hiltViewModel()) {
     val passwordState = rememberTextFieldState()
     val scrollState = rememberScrollState()
 
-    val isUsernameValid = usernameState is UsernameState.Available
+    val containsWhiteSpace =
+        usernameTextFieldState
+            .text
+            .toString()
+            .containsWhiteSpace()
+    val isUsernameValid = usernameState is UsernameState.Available && !containsWhiteSpace
+
     val isFormValid = if (authMode == AuthMode.SIGN_UP) {
         userNameMinimumCharsReached && passwordMinimumCharsReached && isUsernameValid
     } else {
@@ -97,62 +105,69 @@ fun AuthScreen(viewModel: AuthViewModel = hiltViewModel()) {
             )
 
             if (authMode == AuthMode.SIGN_UP) {
-                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                    TextField(
-                        modifier = Modifier.fillMaxWidth(),
-                        state = usernameTextFieldState,
-                        enabled = !isLoading,
-                        lineLimits = TextFieldLineLimits.SingleLine,
-                        keyboardOptions = KeyboardOptions(
-                            keyboardType = KeyboardType.Text
-                        ),
-                        isError = usernameState is UsernameState.Taken || usernameState is UsernameState.Error,
-                        placeholder = { Text("Username") },
-                        trailingIcon = {
-                            when (usernameState) {
-                                UsernameState.Checking -> {
-                                    CircularProgressIndicator(
-                                        modifier = Modifier.size(18.dp),
-                                        strokeWidth = 2.dp
+                TextField(
+                    modifier = Modifier.fillMaxWidth(),
+                    state = usernameTextFieldState,
+                    enabled = !isLoading,
+                    lineLimits = TextFieldLineLimits.SingleLine,
+                    keyboardOptions = KeyboardOptions(
+                        keyboardType = KeyboardType.Text
+                    ),
+                    isError = usernameState is UsernameState.Taken || usernameState is UsernameState.Error,
+                    placeholder = { Text("Username") },
+                    supportingText = {
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            UserWarning("No spaces allowed")
+
+                            CharacterCounter(
+                                state = usernameTextFieldState,
+                                minimumCharacterCount = 3,
+                                counterText = "$usernameLength / 3 min",
+                                onTooShort = { userNameMinimumCharsReached = false },
+                                onMinimumReached = {
+                                    userNameMinimumCharsReached = true
+                                    viewModel.checkUserNameExists(
+                                        usernameTextFieldState.text.toString().trim()
                                     )
                                 }
-
-                                is UsernameState.Available -> {
-                                    Icon(
-                                        imageVector = Icons.Default.CheckCircle,
-                                        contentDescription = "Username available",
-                                        tint = Color(0xFF34C759)
-                                    )
-                                }
-
-                                is UsernameState.Taken, is UsernameState.Error -> {
-                                    Icon(
-                                        imageVector = Icons.Default.Error,
-                                        contentDescription = "Username unavailable",
-                                        tint = Color(0xFFFF3B30)
-                                    )
-                                }
-
-                                else -> {}
+                            ) {
+                                usernameLength = it
                             }
                         }
-                    )
+                    },
+                    trailingIcon = {
+                        when (usernameState) {
+                            UsernameState.Checking -> {
+                                CircularProgressIndicator(
+                                    modifier = Modifier.size(18.dp),
+                                    strokeWidth = 2.dp
+                                )
+                            }
 
-                    CharacterCounter(
-                        state = usernameTextFieldState,
-                        minimumCharacterCount = 3,
-                        counterText = "$usernameLength / 3 min",
-                        onTooShort = { userNameMinimumCharsReached = false },
-                        onMinimumReached = {
-                            userNameMinimumCharsReached = true
-                            viewModel.checkUserNameExists(
-                                usernameTextFieldState.text.toString().trim()
-                            )
+                            is UsernameState.Available -> {
+                                Icon(
+                                    imageVector = Icons.Default.CheckCircle,
+                                    contentDescription = "Username available",
+                                    tint = Color(0xFF34C759)
+                                )
+                            }
+
+                            is UsernameState.Taken, is UsernameState.Error -> {
+                                Icon(
+                                    imageVector = Icons.Default.Error,
+                                    contentDescription = "Username unavailable",
+                                    tint = Color(0xFFFF3B30)
+                                )
+                            }
+
+                            else -> {}
                         }
-                    ) {
-                        usernameLength = it
                     }
-                }
+                )
             }
 
             TextField(
@@ -165,46 +180,45 @@ fun AuthScreen(viewModel: AuthViewModel = hiltViewModel()) {
                 placeholder = { Text("Email") },
             )
 
-            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                SecureTextField(
-                    modifier = Modifier.fillMaxWidth(),
-                    state = passwordState,
-                    enabled = !isLoading,
-                    textObfuscationCharacter = '*',
-                    textObfuscationMode = if (passwordHidden) {
-                        TextObfuscationMode.RevealLastTyped
-                    } else {
-                        TextObfuscationMode.Visible
-                    },
-                    trailingIcon = {
-                        IconButton(onClick = { passwordHidden = !passwordHidden }) {
-                            val icon = if (passwordHidden)
-                                Icons.Filled.VisibilityOff
-                            else
-                                Icons.Filled.Visibility
+            SecureTextField(
+                modifier = Modifier.fillMaxWidth(),
+                state = passwordState,
+                enabled = !isLoading,
+                textObfuscationCharacter = '*',
+                textObfuscationMode = if (passwordHidden) {
+                    TextObfuscationMode.RevealLastTyped
+                } else {
+                    TextObfuscationMode.Visible
+                },
+                supportingText = {
+                    CharacterCounter(
+                        state = passwordState,
+                        minimumCharacterCount = 8,
+                        counterText = "$passwordLength / 8 min",
+                        onTooShort = { passwordMinimumCharsReached = false },
+                        onMinimumReached = { passwordMinimumCharsReached = true }
+                    ) {
+                        passwordLength = it
+                    }
+                },
+                trailingIcon = {
+                    IconButton(onClick = { passwordHidden = !passwordHidden }) {
+                        val icon = if (passwordHidden)
+                            Icons.Filled.VisibilityOff
+                        else
+                            Icons.Filled.Visibility
 
-                            Icon(
-                                imageVector = icon,
-                                contentDescription = if (passwordHidden) "Show password" else "Hide password"
-                            )
-                        }
-                    },
-                    keyboardOptions = KeyboardOptions(
-                        keyboardType = KeyboardType.Password
-                    ),
-                    placeholder = { Text("Password") }
-                )
-
-                CharacterCounter(
-                    state = passwordState,
-                    minimumCharacterCount = 8,
-                    counterText = "$passwordLength / 8 min",
-                    onTooShort = { passwordMinimumCharsReached = false },
-                    onMinimumReached = { passwordMinimumCharsReached = true }
-                ) {
-                    passwordLength = it
-                }
-            }
+                        Icon(
+                            imageVector = icon,
+                            contentDescription = if (passwordHidden) "Show password" else "Hide password"
+                        )
+                    }
+                },
+                keyboardOptions = KeyboardOptions(
+                    keyboardType = KeyboardType.Password
+                ),
+                placeholder = { Text("Password") }
+            )
 
             if (authMode == AuthMode.LOGIN) {
                 TextButton(
