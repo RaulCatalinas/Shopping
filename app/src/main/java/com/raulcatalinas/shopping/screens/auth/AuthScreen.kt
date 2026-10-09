@@ -54,8 +54,8 @@ import com.raulcatalinas.shopping.shared.components.RequiredFieldsNote
 import com.raulcatalinas.shopping.shared.components.SegmentedButton
 import com.raulcatalinas.shopping.shared.components.UserWarning
 import com.raulcatalinas.shopping.shared.extensions.containsWhiteSpace
+import com.raulcatalinas.shopping.shared.extensions.isValidEmail
 import com.raulcatalinas.shopping.shared.extensions.verticalScrollbar
-import com.raulcatalinas.shopping.shared.utils.isValidEmail
 import com.raulcatalinas.shopping.shared.utils.showToast
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.debounce
@@ -266,7 +266,7 @@ fun AuthScreen(viewModel: AuthViewModel = hiltViewModel()) {
                             return@onClick
                         }
 
-                        if (!isValidEmail(email)) {
+                        if (!email.isValidEmail()) {
                             showToast(context, "Please enter a valid email address")
 
                             return@onClick

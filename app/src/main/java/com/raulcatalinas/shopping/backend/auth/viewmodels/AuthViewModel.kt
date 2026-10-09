@@ -6,7 +6,7 @@ import androidx.lifecycle.viewModelScope
 import com.raulcatalinas.shopping.backend.auth.repositories.AuthRepository
 import com.raulcatalinas.shopping.backend.auth.types.UsernameState
 import com.raulcatalinas.shopping.backend.auth.viewmodels.constants.AUTH_VIEW_MODEL_TAG
-import com.raulcatalinas.shopping.shared.utils.isValidEmail
+import com.raulcatalinas.shopping.shared.extensions.isValidEmail
 import dagger.hilt.android.lifecycle.HiltViewModel
 import io.github.jan.supabase.auth.status.SessionStatus
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -53,7 +53,7 @@ class AuthViewModel @Inject constructor(
         viewModelScope.launch {
             _isLoading.value = true
             val success = try {
-                if (!isValidEmail(email)) {
+                if (!email.isValidEmail()) {
                     Log.e(
                         AUTH_VIEW_MODEL_TAG,
                         "Invalid email format: $email"
@@ -89,7 +89,7 @@ class AuthViewModel @Inject constructor(
         viewModelScope.launch {
             _isLoading.value = true
             val success = try {
-                if (!isValidEmail(email)) {
+                if (!email.isValidEmail()) {
                     Log.e(
                         AUTH_VIEW_MODEL_TAG,
                         "Invalid email format: $email"
