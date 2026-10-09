@@ -1,5 +1,6 @@
 package com.raulcatalinas.shopping.backend.auth.repositories
 
+import com.raulcatalinas.shopping.backend.auth.repositories.constants.RESET_PASSWORD_REDIRECT_URL
 import com.raulcatalinas.shopping.backend.db.DbRepository
 import com.raulcatalinas.shopping.shared.types.UserProfile
 import io.github.jan.supabase.auth.Auth
@@ -68,5 +69,9 @@ class AuthRepository @Inject constructor(
 
     suspend fun checkUserNameExists(userName: String): Result<Boolean> {
         return dbRepository.checkUserNameExists(userName)
+    }
+
+    suspend fun resetPassword(email: String) {
+        auth.resetPasswordForEmail(email, RESET_PASSWORD_REDIRECT_URL)
     }
 }

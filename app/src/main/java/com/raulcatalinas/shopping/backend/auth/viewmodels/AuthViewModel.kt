@@ -225,5 +225,29 @@ class AuthViewModel @Inject constructor(
             }
         }
     }
+
+    fun resetPassword(email: String, onResult: (Boolean) -> Unit) {
+        viewModelScope.launch {
+            _isLoading.value = true
+
+            val success = try {
+                authRepository.resetPassword(email)
+
+                true
+            } catch (e: Exception) {
+                Log.e(
+                    AUTH_VIEW_MODEL_TAG,
+                    "Error resetting password: ${e.message}",
+                    e
+                )
+
+                false
+            }
+
+            _isLoading.value = false
+
+            onResult(success)
+        }
+    }
 }
 

@@ -55,6 +55,7 @@ import com.raulcatalinas.shopping.shared.components.SegmentedButton
 import com.raulcatalinas.shopping.shared.components.UserWarning
 import com.raulcatalinas.shopping.shared.extensions.containsWhiteSpace
 import com.raulcatalinas.shopping.shared.extensions.verticalScrollbar
+import com.raulcatalinas.shopping.shared.utils.isValidEmail
 import com.raulcatalinas.shopping.shared.utils.showToast
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.debounce
@@ -256,7 +257,29 @@ fun AuthScreen(viewModel: AuthViewModel = hiltViewModel()) {
                 TextButton(
                     modifier = Modifier.fillMaxWidth(),
                     enabled = !isLoading,
-                    onClick = { println("Resetting password...") }
+                    onClick = onClick@{
+                        val email = emailState.text.toString().trim()
+
+                        if (email.containsWhiteSpace()) {
+                            showToast(context, "Email is required")
+
+                            return@onClick
+                        }
+
+                        if (!isValidEmail(email)) {
+                            showToast(context, "Please enter a valid email address")
+
+                            return@onClick
+                        }
+
+                        viewModel.resetPassword(email) {
+                            showToast(
+                                context,
+                                if (it) "Reset link sent to your email"
+                                else "Failed to send reset email. Please try again."
+                            )
+                        }
+                    }
                 ) {
                     Text("Reset Password")
                 }
