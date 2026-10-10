@@ -1,5 +1,7 @@
 package com.raulcatalinas.shopping.backend.auth.repositories
 
+import android.util.Log
+import com.raulcatalinas.shopping.backend.auth.repositories.constants.AUTH_REPOSITORY_TAG
 import com.raulcatalinas.shopping.backend.auth.repositories.constants.RESET_PASSWORD_REDIRECT_URL
 import com.raulcatalinas.shopping.backend.db.DbRepository
 import com.raulcatalinas.shopping.shared.types.UserProfile
@@ -27,26 +29,39 @@ class AuthRepository @Inject constructor(
     }
 
     suspend fun signUp(
-        userName: String,
+        username: String,
         email: String,
         password: String
-    ) {
-        val user = auth.signUpWith(Email) {
-            this.email = email
-            this.password = password
+    ): Result<Unit> {
+        return try {
+            val user = auth.signUpWith(Email) {
+                this.email = email
+                this.password = password
+            }
+
+            val userId = user?.id
+                ?: auth.currentUserOrNull()?.id
+                ?: return Result.failure(
+                    IllegalStateException("User ID wasn't returned")
+                )
+
+            val profile = UserProfile(
+                id = userId,
+                username = username.trim()
+            )
+
+            val createdProfile = dbRepository.createUserProfile(profile)
+
+            if (createdProfile == null) {
+                Result.failure(
+                    IllegalStateException("Couldn't create user profile")
+                )
+            } else {
+                Result.success(Unit)
+            }
+        } catch (e: Exception) {
+            Result.failure(e)
         }
-
-        val userId = user?.id
-            ?: auth.currentUserOrNull()?.id
-            ?: throw IllegalStateException("User ID was not returned")
-
-        val profile = UserProfile(
-            id = userId,
-            username = userName.trim()
-        )
-
-        dbRepository.createUserProfile(profile)
-            ?: throw IllegalStateException("Couldn't create user profile")
     }
 
     suspend fun signInWithGoogle() {
@@ -71,7 +86,30 @@ class AuthRepository @Inject constructor(
         return dbRepository.checkUserNameExists(userName)
     }
 
-    suspend fun resetPassword(email: String) {
+    suspend fun sentResetPasswordEmail(email: String) {
         auth.resetPasswordForEmail(email, RESET_PASSWORD_REDIRECT_URL)
+    }
+
+    suspend fun resetPassword(newPassword: String): Result<Unit> {
+        return try {
+            auth.updateUser {
+                password = newPassword
+            }
+
+            Log.d(
+                AUTH_REPOSITORY_TAG,
+                "Password updated successfully"
+            )
+
+            Result.success(Unit)
+        } catch (e: Exception) {
+            Log.e(
+                AUTH_REPOSITORY_TAG,
+                "Error updating password: ${e.message}",
+                e
+            )
+
+            Result.failure(e)
+        }
     }
 }

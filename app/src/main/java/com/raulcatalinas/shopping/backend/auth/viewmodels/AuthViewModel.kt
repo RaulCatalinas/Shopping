@@ -6,15 +6,21 @@ import androidx.lifecycle.viewModelScope
 import com.raulcatalinas.shopping.backend.auth.repositories.AuthRepository
 import com.raulcatalinas.shopping.backend.auth.types.UsernameState
 import com.raulcatalinas.shopping.backend.auth.viewmodels.constants.AUTH_VIEW_MODEL_TAG
+import com.raulcatalinas.shopping.shared.extensions.containsWhiteSpace
 import com.raulcatalinas.shopping.shared.extensions.isValidEmail
 import dagger.hilt.android.lifecycle.HiltViewModel
 import io.github.jan.supabase.auth.status.SessionStatus
+import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.debounce
+import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.launch
 import javax.inject.Inject
+import kotlin.time.Duration.Companion.milliseconds
 
+@OptIn(FlowPreview::class)
 @HiltViewModel
 class AuthViewModel @Inject constructor(
     private val authRepository: AuthRepository,
@@ -23,6 +29,7 @@ class AuthViewModel @Inject constructor(
     private val _authState = MutableStateFlow<AuthState>(AuthState.Loading)
     private val _isLoading = MutableStateFlow(false)
     private val _usernameState = MutableStateFlow<UsernameState>(UsernameState.Idle)
+    private val _usernameQuery = MutableStateFlow("")
 
     val isLoading = _isLoading.asStateFlow()
     val authState: StateFlow<AuthState> = _authState.asStateFlow()
@@ -30,6 +37,28 @@ class AuthViewModel @Inject constructor(
 
     init {
         observeAuthState()
+
+        viewModelScope.launch {
+            _usernameQuery
+                .debounce(400.milliseconds)
+                .distinctUntilChanged()
+                .collect { query ->
+                    val trimmed = query.trim()
+
+                    if (trimmed.isEmpty()) {
+                        _usernameState.value = UsernameState.Idle
+                        return@collect
+                    }
+
+                    if (trimmed.length < 3 || trimmed.containsWhiteSpace()) {
+                        _usernameState.value = UsernameState.Error("Invalid username format")
+
+                        return@collect
+                    }
+
+                    checkUserNameExists(trimmed)
+                }
+        }
     }
 
     private fun observeAuthState() {
@@ -81,43 +110,77 @@ class AuthViewModel @Inject constructor(
     }
 
     fun signUp(
-        userName: String,
+        username: String,
         email: String,
         password: String,
-        onResult: (Boolean) -> Unit
+        confirmedPassword: String,
+        onResult: (success: Boolean, errorMessage: String?) -> Unit
     ) {
         viewModelScope.launch {
             _isLoading.value = true
-            val success = try {
-                if (!email.isValidEmail()) {
-                    Log.e(
-                        AUTH_VIEW_MODEL_TAG,
-                        "Invalid email format: $email"
-                    )
 
-                    false
-                } else {
-                    authRepository.signUp(
-                        userName = userName,
-                        email = email,
-                        password = password
-                    )
+            try {
+                when {
+                    !email.isValidEmail() -> {
+                        Log.e(
+                            AUTH_VIEW_MODEL_TAG,
+                            "Invalid email format: $email"
+                        )
 
-                    true
+                        onResult(
+                            false,
+                            "Invalid email address format."
+                        )
+
+                        return@launch
+                    }
+
+                    password != confirmedPassword -> {
+                        Log.e(
+                            AUTH_VIEW_MODEL_TAG,
+                            "Passwords do not match for user: $username"
+                        )
+
+                        onResult(
+                            false,
+                            "Passwords don't match."
+                        )
+
+                        return@launch
+                    }
                 }
-            } catch (e: Exception) {
-                Log.e(
-                    AUTH_VIEW_MODEL_TAG,
-                    "Error signing up: ${e.message}",
-                    e
+
+                val result = authRepository.signUp(
+                    username = username,
+                    email = email,
+                    password = password
                 )
 
-                false
+                if (result.isSuccess) {
+                    onResult(
+                        true,
+                        null
+                    )
+
+                    return@launch
+                }
+
+                val error =
+                    result.exceptionOrNull()?.message
+                        ?: "An unexpected error occurred during sign up."
+
+                Log.e(
+                    AUTH_VIEW_MODEL_TAG,
+                    "Error signing up: $error"
+                )
+
+                onResult(
+                    false,
+                    error
+                )
+            } finally {
+                _isLoading.value = false
             }
-
-            _isLoading.value = false
-
-            onResult(success)
         }
     }
 
@@ -128,6 +191,7 @@ class AuthViewModel @Inject constructor(
             _isLoading.value = true
             val success = try {
                 authRepository.signInWithGoogle()
+
                 true
             } catch (e: Exception) {
                 Log.e(
@@ -145,9 +209,7 @@ class AuthViewModel @Inject constructor(
         }
     }
 
-    fun signOut(
-        onResult: (Boolean) -> Unit
-    ) {
+    fun signOut(onResult: (Boolean) -> Unit) {
         viewModelScope.launch {
             _isLoading.value = true
             val success = try {
@@ -226,27 +288,103 @@ class AuthViewModel @Inject constructor(
         }
     }
 
-    fun resetPassword(email: String, onResult: (Boolean) -> Unit) {
+    fun sentResetPasswordEmail(email: String, onResult: (Boolean) -> Unit) {
         viewModelScope.launch {
             _isLoading.value = true
 
             val success = try {
-                authRepository.resetPassword(email)
+                if (!email.isValidEmail()) {
+                    Log.e(
+                        AUTH_VIEW_MODEL_TAG,
+                        "Invalid email format: $email"
+                    )
 
-                true
+                    false
+                } else {
+                    authRepository.sentResetPasswordEmail(email)
+
+                    true
+                }
             } catch (e: Exception) {
                 Log.e(
                     AUTH_VIEW_MODEL_TAG,
                     "Error resetting password: ${e.message}",
                     e
                 )
-
                 false
             }
 
             _isLoading.value = false
 
             onResult(success)
+        }
+    }
+
+    fun onUsernameTyped(query: String) {
+        _usernameQuery.value = query
+    }
+
+    fun resetPassword(
+        newPassword: String,
+        confirmedNewPassword: String,
+        onResult: (success: Boolean, errorMessage: String?) -> Unit
+    ) {
+        viewModelScope.launch {
+            _isLoading.value = true
+
+            try {
+                if (newPassword != confirmedNewPassword) {
+                    Log.e(
+                        AUTH_VIEW_MODEL_TAG,
+                        "Passwords don't match for reset password flow"
+                    )
+
+                    onResult(
+                        false,
+                        "Passwords don't match."
+                    )
+
+                    return@launch
+                }
+
+                val result = authRepository.resetPassword(newPassword)
+
+                if (result.isSuccess) {
+                    onResult(
+                        true,
+                        null
+                    )
+
+                    return@launch
+                }
+
+                val rawError = result.exceptionOrNull()?.message
+                Log.e(
+                    AUTH_VIEW_MODEL_TAG,
+                    "Error resetting password: $rawError"
+                )
+
+                val userFriendlyMessage = when {
+                    rawError?.contains("same password", ignoreCase = true) == true -> {
+                        "New password cannot be the same as your old password."
+                    }
+
+                    rawError?.contains("network", ignoreCase = true) == true -> {
+                        "Network error. Please check your connection and try again."
+                    }
+
+                    else -> {
+                        "Failed to reset password. Please try requesting a new reset link."
+                    }
+                }
+
+                onResult(
+                    false,
+                    userFriendlyMessage
+                )
+            } finally {
+                _isLoading.value = false
+            }
         }
     }
 }

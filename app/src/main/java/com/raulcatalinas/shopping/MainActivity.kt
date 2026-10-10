@@ -1,5 +1,6 @@
 package com.raulcatalinas.shopping
 
+import android.content.Intent
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -16,6 +17,8 @@ import androidx.compose.material3.adaptive.navigationsuite.NavigationSuiteScaffo
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.unit.dp
@@ -31,6 +34,7 @@ import androidx.navigation.compose.rememberNavController
 import com.raulcatalinas.shopping.backend.auth.viewmodels.AuthState
 import com.raulcatalinas.shopping.backend.auth.viewmodels.AuthViewModel
 import com.raulcatalinas.shopping.screens.auth.AuthScreen
+import com.raulcatalinas.shopping.screens.auth.ResetPasswordScreen
 import com.raulcatalinas.shopping.screens.home.HomeScreen
 import com.raulcatalinas.shopping.screens.profile.ProfileScreen
 import com.raulcatalinas.shopping.screens.settings.SettingsScreen
@@ -40,10 +44,14 @@ import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
+    private var deepLinkRoute by mutableStateOf<String?>(null)
+
     override fun onCreate(savedInstanceState: Bundle?) {
         val splashScreen = installSplashScreen()
 
         super.onCreate(savedInstanceState)
+
+        handleDeepLink(intent)
 
         val authViewModel: AuthViewModel by viewModels()
 
@@ -66,10 +74,28 @@ class MainActivity : ComponentActivity() {
                     AuthState.Loading -> {}
                     AuthState.Authenticated,
                     AuthState.Unauthenticated -> {
-                        ShoppingApp(authState = authState)
+                        ShoppingApp(
+                            authState = authState,
+                            deepLinkRoute = deepLinkRoute,
+                            onDeepLinkHandled = { deepLinkRoute = null }
+                        )
                     }
                 }
             }
+        }
+    }
+
+    override fun onNewIntent(intent: Intent) {
+        super.onNewIntent(intent)
+        setIntent(intent)
+        handleDeepLink(intent)
+    }
+
+    private fun handleDeepLink(intent: Intent?) {
+        val data = intent?.data ?: return
+
+        if (data.scheme == "shopping" && data.host == "reset-password") {
+            deepLinkRoute = "RESET_PASSWORD"
         }
     }
 }
@@ -77,10 +103,21 @@ class MainActivity : ComponentActivity() {
 @Composable
 fun ShoppingApp(
     authState: AuthState,
+    deepLinkRoute: String? = null,
+    onDeepLinkHandled: () -> Unit = {},
     navController: NavHostController = rememberNavController()
 ) {
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val currentRoute = navBackStackEntry?.destination?.route
+
+    LaunchedEffect(deepLinkRoute) {
+        deepLinkRoute?.let { route ->
+            navController.navigate(route) {
+                launchSingleTop = true
+            }
+            onDeepLinkHandled()
+        }
+    }
 
     NavigationSuiteScaffold(
         navigationSuiteItems = {
@@ -145,6 +182,16 @@ fun ShoppingApp(
             }
         ) {
             composable("AUTH") { AuthScreen() }
+
+            composable("RESET_PASSWORD") {
+                ResetPasswordScreen(
+                    onPasswordResetSuccess = {
+                        navController.navigate("AUTH") {
+                            popUpTo("RESET_PASSWORD") { inclusive = true }
+                        }
+                    }
+                )
+            }
 
             AppDestinations.entries.forEach { destination ->
                 composable(destination.name) {
