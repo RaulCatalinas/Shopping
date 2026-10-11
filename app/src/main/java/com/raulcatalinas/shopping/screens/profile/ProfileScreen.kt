@@ -67,8 +67,6 @@ fun ProfileScreen(
 
     val scrollState = rememberScrollState()
 
-    var showSignOutDialog by remember { mutableStateOf(false) }
-    var showDeleteAccountDialog by remember { mutableStateOf(false) }
     var username by remember { mutableStateOf("") }
     var clearSignal by remember { mutableIntStateOf(0) }
 
@@ -222,55 +220,53 @@ fun ProfileScreen(
 
             SectionHeader(title = "Account")
 
-            Button(
-                modifier = Modifier.fillMaxWidth(),
-                onClick = { showSignOutDialog = true },
-            ) {
-                Text("Log out")
-            }
-
-            Button(
-                modifier = Modifier.fillMaxWidth(),
-                onClick = { showDeleteAccountDialog = true },
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = MaterialTheme.colorScheme.error,
-                    contentColor = MaterialTheme.colorScheme.onError
-                )
-            ) {
-                Text("Delete account")
-            }
-        }
-
-        if (showSignOutDialog) {
             ConfirmDialog(
                 title = "Log out",
                 content = "Are you sure you want to log out?",
-            ) {
-                showSignOutDialog = false
-                authViewModel.signOut { success ->
-                    showToast(
-                        context,
-                        if (success) "Session closed successfully"
-                        else "We were unable to log you out; please try again later"
-                    )
+                onConfirm = {
+                    authViewModel.signOut { success ->
+                        showToast(
+                            context,
+                            if (success) "Session closed successfully"
+                            else "We were unable to log you out; please try again later"
+                        )
+                    }
+                },
+                trigger = { open ->
+                    Button(
+                        modifier = Modifier.fillMaxWidth(),
+                        onClick = open
+                    ) {
+                        Text("Log out")
+                    }
                 }
-            }
-        }
+            )
 
-        if (showDeleteAccountDialog) {
             ConfirmDialog(
                 title = "Delete account",
                 content = "Are you sure you want to delete your account? This action cannot be undone.",
-            ) {
-                showDeleteAccountDialog = false
-                authViewModel.deleteAccount { success ->
-                    showToast(
-                        context,
-                        if (success) "Account deleted successfully"
-                        else "We were unable to delete your account; please try again later"
-                    )
+                onConfirm = {
+                    authViewModel.deleteAccount { success ->
+                        showToast(
+                            context,
+                            if (success) "Account deleted successfully"
+                            else "We were unable to delete your account; please try again later"
+                        )
+                    }
+                },
+                trigger = { open ->
+                    Button(
+                        modifier = Modifier.fillMaxWidth(),
+                        onClick = open,
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = MaterialTheme.colorScheme.error,
+                            contentColor = MaterialTheme.colorScheme.onError
+                        )
+                    ) {
+                        Text("Delete account")
+                    }
                 }
-            }
+            )
         }
     }
 }

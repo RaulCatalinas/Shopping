@@ -7,39 +7,40 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 
 @Composable
 fun ConfirmDialog(
     title: String,
     content: String,
-    onConfirmRequest: () -> Unit
+    onConfirm: () -> Unit,
+    trigger: @Composable (open: () -> Unit) -> Unit
 ) {
-    var showDialog by remember { mutableStateOf(true) }
+    var showDialog by rememberSaveable { mutableStateOf(false) }
 
-    if (showDialog) {
-        AlertDialog(
-            onDismissRequest = {
-                showDialog = false
-            },
-            title = { Text(title) },
-            text = { Text(content) },
-            confirmButton = {
-                Button(
-                    onClick = {
-                        onConfirmRequest()
-                        showDialog = false
-                    },
-                ) {
-                    Text("Yes")
+    trigger { showDialog = true }
+
+    if (!showDialog) return
+
+    AlertDialog(
+        onDismissRequest = { showDialog = false },
+        title = { Text(title) },
+        text = { Text(content) },
+        confirmButton = {
+            Button(
+                onClick = {
+                    showDialog = false
+                    onConfirm()
                 }
-            },
-            dismissButton = {
-                OutlinedButton(onClick = { showDialog = false }) {
-                    Text("No")
-                }
+            ) {
+                Text("Yes")
             }
-        )
-    }
+        },
+        dismissButton = {
+            OutlinedButton(onClick = { showDialog = false }) {
+                Text("No")
+            }
+        }
+    )
 }
