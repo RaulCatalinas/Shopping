@@ -27,8 +27,8 @@ object SupabaseModule {
             install(Postgrest)
             install(Auth) {
                 flowType = FlowType.PKCE
-                scheme = "app"
-                host = "supabase.com"
+                scheme = "shopping"
+                host = "reset-password"
             }
         }
     }

@@ -21,6 +21,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.input.KeyboardType
+import com.raulcatalinas.shopping.shared.extensions.containsWhiteSpace
 
 @Composable
 fun PasswordInput(
@@ -47,6 +48,7 @@ fun PasswordInput(
         modifier = modifier.fillMaxWidth(),
         state = passwordState,
         enabled = enabled,
+        isError = passwordState.text.toString().containsWhiteSpace(),
         textObfuscationCharacter = '*',
         textObfuscationMode = if (passwordHidden) {
             TextObfuscationMode.RevealLastTyped

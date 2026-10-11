@@ -24,6 +24,7 @@ import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.raulcatalinas.shopping.backend.auth.viewmodels.AuthViewModel
 import com.raulcatalinas.shopping.shared.components.PasswordInput
+import com.raulcatalinas.shopping.shared.extensions.containsWhiteSpace
 import com.raulcatalinas.shopping.shared.extensions.verticalScrollbar
 import com.raulcatalinas.shopping.shared.utils.showToast
 
@@ -46,6 +47,8 @@ fun ResetPasswordScreen(
     val isFormValid =
         passwordMinimumCharsReached
                 && confirmedPasswordMinimumCharsReached
+                && !newPassword.containsWhiteSpace()
+                && !confirmedNewPassword.containsWhiteSpace()
 
     Scaffold { paddingValues ->
         Column(

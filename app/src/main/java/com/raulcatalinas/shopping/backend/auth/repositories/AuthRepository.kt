@@ -1,11 +1,14 @@
 package com.raulcatalinas.shopping.backend.auth.repositories
 
+import android.content.Intent
 import android.util.Log
 import com.raulcatalinas.shopping.backend.auth.repositories.constants.AUTH_REPOSITORY_TAG
 import com.raulcatalinas.shopping.backend.auth.repositories.constants.RESET_PASSWORD_REDIRECT_URL
 import com.raulcatalinas.shopping.backend.db.DbRepository
 import com.raulcatalinas.shopping.shared.types.UserProfile
+import io.github.jan.supabase.SupabaseClient
 import io.github.jan.supabase.auth.Auth
+import io.github.jan.supabase.auth.handleDeeplinks
 import io.github.jan.supabase.auth.providers.builtin.Email
 import io.github.jan.supabase.auth.status.SessionStatus
 import kotlinx.coroutines.flow.Flow
@@ -13,7 +16,8 @@ import javax.inject.Inject
 
 class AuthRepository @Inject constructor(
     private val auth: Auth,
-    private val dbRepository: DbRepository
+    private val dbRepository: DbRepository,
+    private val supabaseClient: SupabaseClient
 ) {
     val sessionStatus: Flow<SessionStatus>
         get() = auth.sessionStatus
@@ -106,6 +110,24 @@ class AuthRepository @Inject constructor(
             Log.e(
                 AUTH_REPOSITORY_TAG,
                 "Error updating password: ${e.message}",
+                e
+            )
+
+            Result.failure(e)
+        }
+    }
+
+    fun handleDeepLink(intent: Intent): Result<Unit> {
+        return try {
+            supabaseClient.handleDeeplinks(intent)
+
+            Log.d(AUTH_REPOSITORY_TAG, "Deep link handle succfully")
+
+            Result.success(Unit)
+        } catch (e: Exception) {
+            Log.e(
+                AUTH_REPOSITORY_TAG,
+                "Error handling deep link: ${e.message}",
                 e
             )
 

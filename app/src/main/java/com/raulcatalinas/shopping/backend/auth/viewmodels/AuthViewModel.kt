@@ -1,5 +1,6 @@
 package com.raulcatalinas.shopping.backend.auth.viewmodels
 
+import android.content.Intent
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -12,8 +13,8 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import io.github.jan.supabase.auth.status.SessionStatus
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.launch
@@ -30,10 +31,12 @@ class AuthViewModel @Inject constructor(
     private val _isLoading = MutableStateFlow(false)
     private val _usernameState = MutableStateFlow<UsernameState>(UsernameState.Idle)
     private val _usernameQuery = MutableStateFlow("")
+    private val _isRecovering = MutableStateFlow(false)
 
     val isLoading = _isLoading.asStateFlow()
-    val authState: StateFlow<AuthState> = _authState.asStateFlow()
-    val usernameState: StateFlow<UsernameState> = _usernameState.asStateFlow()
+    val authState = _authState.asStateFlow()
+    val usernameState = _usernameState.asStateFlow()
+    val isRecovering = _isRecovering.asStateFlow()
 
     init {
         observeAuthState()
@@ -63,14 +66,23 @@ class AuthViewModel @Inject constructor(
 
     private fun observeAuthState() {
         viewModelScope.launch {
-            authRepository.sessionStatus.collect { status ->
-                _authState.value = when (status) {
+            combine(authRepository.sessionStatus, _isRecovering) { status, recovering ->
+                if (recovering) {
+                    return@combine if (status is SessionStatus.Authenticated) {
+                        AuthState.PasswordRecovery
+                    } else {
+                        AuthState.Loading
+                    }
+                }
+
+                when (status) {
                     SessionStatus.Initializing -> AuthState.Loading
                     is SessionStatus.Authenticated -> AuthState.Authenticated
                     is SessionStatus.NotAuthenticated -> AuthState.Unauthenticated
                     is SessionStatus.RefreshFailure -> AuthState.Unauthenticated
                 }
             }
+                .collect { _authState.value = it }
         }
     }
 
@@ -359,6 +371,7 @@ class AuthViewModel @Inject constructor(
                 }
 
                 val rawError = result.exceptionOrNull()?.message
+
                 Log.e(
                     AUTH_VIEW_MODEL_TAG,
                     "Error resetting password: $rawError"
@@ -385,6 +398,93 @@ class AuthViewModel @Inject constructor(
             } finally {
                 _isLoading.value = false
             }
+        }
+    }
+
+    fun handleDeepLink(
+        intent: Intent,
+        onResult: (success: Boolean, errorMessage: String?) -> Unit
+    ) {
+        _isRecovering.value = true
+
+        viewModelScope.launch {
+            _isLoading.value = true
+
+            try {
+                val result = authRepository.handleDeepLink(intent)
+
+                if (result.isSuccess) {
+                    onResult(
+                        true,
+                        null
+                    )
+
+                    return@launch
+                }
+
+                _isRecovering.value = false
+
+                val rawError = result.exceptionOrNull()?.message
+
+                Log.e(
+                    AUTH_VIEW_MODEL_TAG,
+                    "Error handling deep link: $rawError"
+                )
+
+                val userFriendlyMessage = when {
+                    rawError.isNullOrBlank() -> {
+                        "Unable to verify the password reset link. Please request a new one."
+                    }
+
+                    rawError.contains("network", ignoreCase = true)
+                            || rawError.contains("timeout", ignoreCase = true)
+                            || rawError.contains("connection", ignoreCase = true)
+                        -> {
+                        "Network error. Please check your connection and try again."
+                    }
+
+                    rawError.contains("expired", ignoreCase = true)
+                            || rawError.contains("invalid token", ignoreCase = true)
+                            || rawError.contains("otp", ignoreCase = true)
+                            || rawError.contains("code verifier", ignoreCase = true)
+                        -> {
+                        "This password reset link is invalid or has expired. Please request a new one."
+                    }
+
+                    else -> {
+                        "Unable to verify the password reset link. Please request a new one and try again."
+                    }
+                }
+
+                onResult(
+                    false,
+                    userFriendlyMessage
+                )
+            } catch (e: Exception) {
+                _isRecovering.value = false
+
+                throw e
+            } finally {
+                _isLoading.value = false
+            }
+        }
+    }
+
+    fun finishRecovery(signOut: Boolean) {
+        viewModelScope.launch {
+            if (signOut) {
+                try {
+                    authRepository.signOut()
+                } catch (e: Exception) {
+                    Log.e(
+                        AUTH_VIEW_MODEL_TAG,
+                        "Error signing out after recovery: ${e.message}",
+                        e
+                    )
+                }
+            }
+
+            _isRecovering.value = false
         }
     }
 }

@@ -17,8 +17,6 @@ import androidx.compose.material3.adaptive.navigationsuite.NavigationSuiteScaffo
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.unit.dp
@@ -39,21 +37,21 @@ import com.raulcatalinas.shopping.screens.home.HomeScreen
 import com.raulcatalinas.shopping.screens.profile.ProfileScreen
 import com.raulcatalinas.shopping.screens.settings.SettingsScreen
 import com.raulcatalinas.shopping.screens.settings.viewmodels.SettingsViewModel
+import com.raulcatalinas.shopping.shared.utils.showToast
 import com.raulcatalinas.shopping.ui.theme.ShoppingTheme
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
-    private var deepLinkRoute by mutableStateOf<String?>(null)
+    private val authViewModel: AuthViewModel by viewModels()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         val splashScreen = installSplashScreen()
 
         super.onCreate(savedInstanceState)
 
-        handleDeepLink(intent)
-
-        val authViewModel: AuthViewModel by viewModels()
+        // Solo en un arranque nuevo, no cuando la Activity se recrea
+        if (savedInstanceState == null) handlePasswordResetIntent(intent)
 
         enableEdgeToEdge()
 
@@ -72,13 +70,16 @@ class MainActivity : ComponentActivity() {
             ) {
                 when (authState) {
                     AuthState.Loading -> {}
+
+                    AuthState.PasswordRecovery -> ResetPasswordScreen(
+                        onPasswordResetSuccess = {
+                            authViewModel.finishRecovery(signOut = true)
+                        }
+                    )
+
                     AuthState.Authenticated,
                     AuthState.Unauthenticated -> {
-                        ShoppingApp(
-                            authState = authState,
-                            deepLinkRoute = deepLinkRoute,
-                            onDeepLinkHandled = { deepLinkRoute = null }
-                        )
+                        ShoppingApp(authState = authState)
                     }
                 }
             }
@@ -88,36 +89,34 @@ class MainActivity : ComponentActivity() {
     override fun onNewIntent(intent: Intent) {
         super.onNewIntent(intent)
         setIntent(intent)
-        handleDeepLink(intent)
+        handlePasswordResetIntent(intent)
     }
 
-    private fun handleDeepLink(intent: Intent?) {
+    private fun handlePasswordResetIntent(intent: Intent?) {
         val data = intent?.data ?: return
 
-        if (data.scheme == "shopping" && data.host == "reset-password") {
-            deepLinkRoute = "RESET_PASSWORD"
+        if (
+            intent.action != Intent.ACTION_VIEW
+            || data.scheme != "shopping"
+            || data.host != "reset-password"
+        ) return
+
+        authViewModel.handleDeepLink(Intent(intent)) { success, errorMessage ->
+            if (!success) showToast(this, errorMessage!!)
         }
+
+        intent.data = null
+        intent.action = null
     }
 }
 
 @Composable
 fun ShoppingApp(
     authState: AuthState,
-    deepLinkRoute: String? = null,
-    onDeepLinkHandled: () -> Unit = {},
     navController: NavHostController = rememberNavController()
 ) {
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val currentRoute = navBackStackEntry?.destination?.route
-
-    LaunchedEffect(deepLinkRoute) {
-        deepLinkRoute?.let { route ->
-            navController.navigate(route) {
-                launchSingleTop = true
-            }
-            onDeepLinkHandled()
-        }
-    }
 
     NavigationSuiteScaffold(
         navigationSuiteItems = {
@@ -182,16 +181,6 @@ fun ShoppingApp(
             }
         ) {
             composable("AUTH") { AuthScreen() }
-
-            composable("RESET_PASSWORD") {
-                ResetPasswordScreen(
-                    onPasswordResetSuccess = {
-                        navController.navigate("AUTH") {
-                            popUpTo("RESET_PASSWORD") { inclusive = true }
-                        }
-                    }
-                )
-            }
 
             AppDestinations.entries.forEach { destination ->
                 composable(destination.name) {

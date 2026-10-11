@@ -76,8 +76,12 @@ fun AuthScreen(viewModel: AuthViewModel = hiltViewModel()) {
                 && confirmedPasswordMinimumCharsReached
                 && isUsernameValid
                 && email.isNotEmpty()
+                && !password.containsWhiteSpace()
+                && !confirmedPassword.containsWhiteSpace()
     } else {
-        passwordMinimumCharsReached && email.isNotEmpty()
+        passwordMinimumCharsReached
+                && email.isNotEmpty()
+                && !password.containsWhiteSpace()
     }
 
     Scaffold { paddingValues ->
