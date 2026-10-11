@@ -25,6 +25,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -69,6 +70,7 @@ fun ProfileScreen(
     var showSignOutDialog by remember { mutableStateOf(false) }
     var showDeleteAccountDialog by remember { mutableStateOf(false) }
     var username by remember { mutableStateOf("") }
+    var clearSignal by remember { mutableIntStateOf(0) }
 
     val isSameUsername = profileViewModel.isSameAsInitialUsername()
     val containsWhiteSpace = username.containsWhiteSpace()
@@ -122,13 +124,13 @@ fun ProfileScreen(
             RequiredFieldsNote()
 
             Input(
-                modifier = Modifier.fillMaxWidth(),
                 isOutlined = true,
                 enabled = !profileViewModel.isLoading,
                 lineLimits = TextFieldLineLimits.SingleLine,
                 placeholder = "e.g. JohnDoe",
                 showCharacterCounter = true,
                 minimumCharacterCount = 3,
+                clearSignal = clearSignal,
                 onTooShort = { userNameMinimumCharsReached = false },
                 onMinimumReached = { userNameMinimumCharsReached = true },
                 isError =
@@ -185,10 +187,19 @@ fun ProfileScreen(
                 modifier = Modifier.fillMaxWidth(),
                 onClick = {
                     profileViewModel.updateUsername { success ->
+                        if (success) {
+                            clearSignal++
+                            showToast(
+                                context,
+                                "Username updated successfully"
+                            )
+
+                            return@updateUsername
+                        }
+
                         showToast(
                             context,
-                            if (success) "Username updated successfully"
-                            else "Failed to update username"
+                            "Failed to update username"
                         )
                     }
                 },

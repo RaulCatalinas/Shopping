@@ -5,7 +5,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.text.input.TextFieldLineLimits
-import androidx.compose.foundation.text.input.TextFieldState
+import androidx.compose.foundation.text.input.clearText
 import androidx.compose.foundation.text.input.rememberTextFieldState
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
@@ -14,6 +14,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
@@ -24,12 +25,12 @@ import androidx.compose.ui.text.input.KeyboardType
 @Composable
 fun Input(
     modifier: Modifier = Modifier,
-    state: TextFieldState = rememberTextFieldState(),
     enabled: Boolean = true,
     isError: Boolean = false,
     isOutlined: Boolean = false,
     showCharacterCounter: Boolean = false,
     minimumCharacterCount: Int? = null,
+    clearSignal: Int = 0,
     placeholder: String,
     lineLimits: TextFieldLineLimits = TextFieldLineLimits.SingleLine,
     trailingIcon: @Composable (() -> Unit)? = null,
@@ -40,6 +41,16 @@ fun Input(
     onTyping: (String) -> Unit,
 ) {
     var inputContentLength by rememberSaveable { mutableIntStateOf(0) }
+    var handledSignal by remember { mutableIntStateOf(clearSignal) }
+
+    val state = rememberTextFieldState()
+
+    LaunchedEffect(clearSignal) {
+        if (clearSignal != handledSignal) {
+            state.clearText()
+            handledSignal = clearSignal
+        }
+    }
 
     LaunchedEffect(state) {
         snapshotFlow { state.text.toString().trim() }
