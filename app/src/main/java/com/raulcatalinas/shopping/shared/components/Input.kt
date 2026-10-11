@@ -5,7 +5,9 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.text.input.TextFieldLineLimits
+import androidx.compose.foundation.text.input.TextFieldState
 import androidx.compose.foundation.text.input.rememberTextFieldState
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
@@ -22,8 +24,10 @@ import androidx.compose.ui.text.input.KeyboardType
 @Composable
 fun Input(
     modifier: Modifier = Modifier,
+    state: TextFieldState = rememberTextFieldState(),
     enabled: Boolean = true,
     isError: Boolean = false,
+    isOutlined: Boolean = false,
     showCharacterCounter: Boolean = false,
     minimumCharacterCount: Int? = null,
     placeholder: String,
@@ -37,24 +41,17 @@ fun Input(
 ) {
     var inputContentLength by rememberSaveable { mutableIntStateOf(0) }
 
-    val inputState = rememberTextFieldState()
-
-    LaunchedEffect(inputState) {
-        snapshotFlow { inputState.text.toString().trim() }
+    LaunchedEffect(state) {
+        snapshotFlow { state.text.toString().trim() }
             .collect { text ->
                 onTyping(text)
             }
     }
 
-    TextField(
-        modifier = modifier.fillMaxWidth(),
-        state = inputState,
-        enabled = enabled,
-        lineLimits = lineLimits,
-        keyboardOptions = KeyboardOptions(keyboardType = keyboardType),
-        isError = isError,
-        placeholder = { Text(placeholder) },
-        supportingText = if (supportingText != null || showCharacterCounter) {
+    val placeholderContent: @Composable () -> Unit = { Text(placeholder) }
+
+    val supportingContent: (@Composable () -> Unit)? =
+        if (supportingText != null || showCharacterCounter) {
             {
                 Row(
                     modifier = Modifier.fillMaxWidth(),
@@ -68,7 +65,7 @@ fun Input(
                     }
 
                     CharacterCounter(
-                        state = inputState,
+                        state = state,
                         minimumCharacterCount = minimumCharacterCount,
                         counterText = "$inputContentLength / $minimumCharacterCount min",
                         onTooShort = onTooShort,
@@ -78,7 +75,35 @@ fun Input(
                     }
                 }
             }
-        } else null,
+        } else null
+
+    val keyboardOptions = KeyboardOptions(keyboardType = keyboardType)
+
+    if (isOutlined) {
+        OutlinedTextField(
+            modifier = modifier.fillMaxWidth(),
+            state = state,
+            enabled = enabled,
+            lineLimits = lineLimits,
+            keyboardOptions = keyboardOptions,
+            isError = isError,
+            placeholder = placeholderContent,
+            supportingText = supportingContent,
+            trailingIcon = trailingIcon,
+        )
+
+        return
+    }
+
+    TextField(
+        modifier = modifier.fillMaxWidth(),
+        state = state,
+        enabled = enabled,
+        lineLimits = lineLimits,
+        keyboardOptions = keyboardOptions,
+        isError = isError,
+        placeholder = placeholderContent,
+        supportingText = supportingContent,
         trailingIcon = trailingIcon,
     )
 }

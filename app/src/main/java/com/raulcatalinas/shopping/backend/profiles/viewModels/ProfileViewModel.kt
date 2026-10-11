@@ -24,8 +24,8 @@ class ProfileViewModel @Inject constructor(
     var isLoading by mutableStateOf(false)
         private set
 
-    fun onUsernameChange(newName: String) {
-        username = newName
+    fun onUsernameChange(newUsername: String) {
+        username = newUsername.ifBlank { initialUsername }
     }
 
     fun isSameAsInitialUsername(): Boolean {

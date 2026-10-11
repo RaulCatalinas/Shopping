@@ -2,16 +2,13 @@ package com.raulcatalinas.shopping.screens.profile
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.text.input.TextFieldLineLimits
-import androidx.compose.foundation.text.input.rememberTextFieldState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.CheckCircle
@@ -23,13 +20,11 @@ import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
-import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -39,15 +34,14 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.raulcatalinas.shopping.backend.auth.types.UsernameState
 import com.raulcatalinas.shopping.backend.auth.viewmodels.AuthViewModel
 import com.raulcatalinas.shopping.backend.profiles.viewModels.ProfileViewModel
-import com.raulcatalinas.shopping.shared.components.CharacterCounter
 import com.raulcatalinas.shopping.shared.components.ConfirmDialog
+import com.raulcatalinas.shopping.shared.components.Input
 import com.raulcatalinas.shopping.shared.components.RequiredFieldsNote
 import com.raulcatalinas.shopping.shared.components.SectionHeader
 import com.raulcatalinas.shopping.shared.components.UserWarning
@@ -71,18 +65,13 @@ fun ProfileScreen(
     var userNameMinimumCharsReached by rememberSaveable { mutableStateOf(false) }
 
     val scrollState = rememberScrollState()
-    val usernameTextFieldState = rememberTextFieldState()
 
     var showSignOutDialog by remember { mutableStateOf(false) }
     var showDeleteAccountDialog by remember { mutableStateOf(false) }
-    var usernameLength by rememberSaveable { mutableIntStateOf(0) }
+    var username by remember { mutableStateOf("") }
 
     val isSameUsername = profileViewModel.isSameAsInitialUsername()
-    val containsWhiteSpace =
-        usernameTextFieldState
-            .text
-            .toString()
-            .containsWhiteSpace()
+    val containsWhiteSpace = username.containsWhiteSpace()
     val isUsernameValid =
         (isSameUsername || usernameState is UsernameState.Available)
                 && !containsWhiteSpace
@@ -94,20 +83,16 @@ fun ProfileScreen(
         profileViewModel.fetchUserProfile()
     }
 
-    LaunchedEffect(usernameTextFieldState) {
-        snapshotFlow { usernameTextFieldState.text.toString().trim() }
+    LaunchedEffect(Unit) {
+        snapshotFlow { username }
             .distinctUntilChanged()
             .debounce(400.milliseconds)
             .collect { newUsername ->
-                profileViewModel.onUsernameChange(newUsername)
-
                 if (
                     newUsername.length < 3
                     || newUsername.containsWhiteSpace()
                     || profileViewModel.isSameAsInitialUsername()
-                ) {
-                    return@collect
-                }
+                ) return@collect
 
                 authViewModel.checkUserNameExists(newUsername)
             }
@@ -136,41 +121,24 @@ fun ProfileScreen(
 
             RequiredFieldsNote()
 
-            OutlinedTextField(
+            Input(
                 modifier = Modifier.fillMaxWidth(),
-                state = usernameTextFieldState,
+                isOutlined = true,
                 enabled = !profileViewModel.isLoading,
                 lineLimits = TextFieldLineLimits.SingleLine,
-                keyboardOptions = KeyboardOptions(
-                    keyboardType = KeyboardType.Text
-                ),
-                placeholder = { Text("e.g. JohnDoe") },
+                placeholder = "e.g. JohnDoe",
+                showCharacterCounter = true,
+                minimumCharacterCount = 3,
+                onTooShort = { userNameMinimumCharsReached = false },
+                onMinimumReached = { userNameMinimumCharsReached = true },
                 isError =
                     usernameState is UsernameState.Taken
                             || usernameState is UsernameState.Error
                             || containsWhiteSpace,
-                supportingText = {
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        UserWarning("No spaces allowed")
-
-                        CharacterCounter(
-                            state = usernameTextFieldState,
-                            minimumCharacterCount = 3,
-                            counterText = "$usernameLength / 3 min",
-                            onTooShort = { userNameMinimumCharsReached = false },
-                            onMinimumReached = { userNameMinimumCharsReached = true }
-                        ) {
-                            usernameLength = it
-                        }
-                    }
-                },
+                supportingText = { UserWarning("No spaces allowed") },
                 trailingIcon = trailingIcon@{
                     if (isSameUsername) return@trailingIcon
-                    if (usernameTextFieldState.text.isBlank()) return@trailingIcon
+                    if (username.isBlank()) return@trailingIcon
                     if (containsWhiteSpace) {
                         Icon(
                             imageVector = Icons.Default.Error,
@@ -208,7 +176,10 @@ fun ProfileScreen(
                         else -> {}
                     }
                 }
-            )
+            ) {
+                username = it
+                profileViewModel.onUsernameChange(it)
+            }
 
             OutlinedButton(
                 modifier = Modifier.fillMaxWidth(),
