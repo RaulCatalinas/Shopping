@@ -1,4 +1,4 @@
-package com.raulcatalinas.shopping.screens.auth.enums
+package com.raulcatalinas.shopping.shared.enums
 
 enum class AuthMode(val label: String) {
     LOGIN("Login"),

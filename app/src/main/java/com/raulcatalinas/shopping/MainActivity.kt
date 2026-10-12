@@ -73,7 +73,7 @@ class MainActivity : ComponentActivity() {
 
                     AuthState.PasswordRecovery -> ResetPasswordScreen(
                         onPasswordResetSuccess = {
-                            authViewModel.finishRecovery(signOut = true)
+                            authViewModel.finishRecovery(signOut = true, context = this)
                         }
                     )
 

@@ -1,5 +1,6 @@
 package com.raulcatalinas.shopping.backend.auth.viewmodels
 
+import android.content.Context
 import android.content.Intent
 import android.util.Log
 import androidx.lifecycle.ViewModel
@@ -9,6 +10,7 @@ import com.raulcatalinas.shopping.backend.auth.types.UsernameState
 import com.raulcatalinas.shopping.backend.auth.viewmodels.constants.AUTH_VIEW_MODEL_TAG
 import com.raulcatalinas.shopping.shared.extensions.containsWhiteSpace
 import com.raulcatalinas.shopping.shared.extensions.isValidEmail
+import com.raulcatalinas.shopping.shared.extensions.toGoogleSignInMessage
 import dagger.hilt.android.lifecycle.HiltViewModel
 import io.github.jan.supabase.auth.status.SessionStatus
 import kotlinx.coroutines.FlowPreview
@@ -36,7 +38,6 @@ class AuthViewModel @Inject constructor(
     val isLoading = _isLoading.asStateFlow()
     val authState = _authState.asStateFlow()
     val usernameState = _usernameState.asStateFlow()
-    val isRecovering = _isRecovering.asStateFlow()
 
     init {
         observeAuthState()
@@ -103,6 +104,7 @@ class AuthViewModel @Inject constructor(
                     false
                 } else {
                     authRepository.signIn(email, password)
+
                     true
                 }
             } catch (e: Exception) {
@@ -197,35 +199,44 @@ class AuthViewModel @Inject constructor(
     }
 
     fun signInWithGoogle(
-        onResult: (Boolean) -> Unit
+        context: Context,
+        onResult: (success: Boolean, errorMessage: String?) -> Unit
     ) {
         viewModelScope.launch {
             _isLoading.value = true
-            val success = try {
-                authRepository.signInWithGoogle()
 
-                true
-            } catch (e: Exception) {
+            try {
+                val result = authRepository.signInWithGoogle(context)
+
+                if (result.isSuccess) {
+                    onResult(true, null)
+
+                    return@launch
+                }
+
+                val error = result.exceptionOrNull()
+
                 Log.e(
                     AUTH_VIEW_MODEL_TAG,
-                    "Error signing in with Google: ${e.message}",
-                    e
+                    "Error signing in with Google: ${error?.message}",
+                    error
                 )
 
-                false
+                onResult(
+                    false,
+                    error.toGoogleSignInMessage()
+                )
+            } finally {
+                _isLoading.value = false
             }
-
-            _isLoading.value = false
-
-            onResult(success)
         }
     }
 
-    fun signOut(onResult: (Boolean) -> Unit) {
+    fun signOut(context: Context, onResult: (Boolean) -> Unit) {
         viewModelScope.launch {
             _isLoading.value = true
             val success = try {
-                authRepository.signOut()
+                authRepository.signOut(context)
 
                 true
             } catch (e: Exception) {
@@ -470,11 +481,11 @@ class AuthViewModel @Inject constructor(
         }
     }
 
-    fun finishRecovery(signOut: Boolean) {
+    fun finishRecovery(signOut: Boolean, context: Context) {
         viewModelScope.launch {
             if (signOut) {
                 try {
-                    authRepository.signOut()
+                    authRepository.signOut(context)
                 } catch (e: Exception) {
                     Log.e(
                         AUTH_VIEW_MODEL_TAG,

@@ -6,6 +6,7 @@ import com.raulcatalinas.shopping.backend.db.constants.DB_REPOSITORY_TAG
 import com.raulcatalinas.shopping.backend.db.constants.DELETE_USER_RPC
 import com.raulcatalinas.shopping.backend.db.constants.IdColumn
 import com.raulcatalinas.shopping.backend.db.constants.ListIdColumn
+import com.raulcatalinas.shopping.backend.db.constants.PROFILE_EXISTS_RPC
 import com.raulcatalinas.shopping.backend.db.constants.TABLE_SHOPPING_ELEMENTS
 import com.raulcatalinas.shopping.backend.db.constants.TABLE_SHOPPING_LISTS
 import com.raulcatalinas.shopping.backend.db.constants.TABLE_SHOPPING_PROFILES
@@ -18,6 +19,7 @@ import com.raulcatalinas.shopping.shared.types.ShoppingList
 import com.raulcatalinas.shopping.shared.types.UserProfile
 import io.github.jan.supabase.postgrest.Postgrest
 import io.github.jan.supabase.postgrest.rpc
+import kotlinx.coroutines.CancellationException
 import javax.inject.Inject
 
 class DbRepository @Inject constructor(
@@ -128,12 +130,15 @@ class DbRepository @Inject constructor(
 
     suspend fun checkUserNameExists(userName: String): Result<Boolean> {
         return try {
-            val exists = db.rpc(
-                function = CHECK_USERNAME_EXISTS_RPC,
-                parameters = CheckUsernameParams(
-                    username = userName.trim()
-                )
-            ).decodeAs<Boolean>()
+            val exists =
+                db
+                    .rpc(
+                        function = CHECK_USERNAME_EXISTS_RPC,
+                        parameters = CheckUsernameParams(
+                            username = userName.trim()
+                        )
+                    )
+                    .decodeAs<Boolean>()
 
             Result.success(exists)
         } catch (e: Exception) {
@@ -142,6 +147,29 @@ class DbRepository @Inject constructor(
                 "Error checking username: ${e.message}",
                 e
             )
+            Result.failure(e)
+        }
+    }
+
+    suspend fun checkProfileExists(): Result<Boolean> {
+        return try {
+            // No params: the SQL function reads the user id from the session token
+            val exists =
+                db
+                    .rpc(PROFILE_EXISTS_RPC)
+                    .decodeAs<Boolean>()
+
+            Result.success(exists)
+        } catch (e: CancellationException) {
+            // Never swallow cancellation, or a canceled coroutine keeps running
+            throw e
+        } catch (e: Exception) {
+            Log.e(
+                DB_REPOSITORY_TAG,
+                "Error checking profile: ${e.message}",
+                e
+            )
+
             Result.failure(e)
         }
     }

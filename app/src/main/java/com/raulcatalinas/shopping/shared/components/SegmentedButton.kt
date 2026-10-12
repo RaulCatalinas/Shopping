@@ -13,11 +13,12 @@ import androidx.compose.ui.unit.sp
 
 @Composable
 fun <T> SegmentedButton(
+    modifier: Modifier = Modifier,
+    enabled: Boolean = true,
     options: List<T>,
     selectedOption: T,
     onOptionSelected: (T) -> Unit,
     label: (T) -> String,
-    modifier: Modifier = Modifier
 ) {
     SingleChoiceSegmentedButtonRow(
         modifier = modifier
@@ -27,6 +28,7 @@ fun <T> SegmentedButton(
         options.forEachIndexed { index, option ->
             SegmentedButton(
                 selected = selectedOption == option,
+                enabled = enabled,
                 onClick = {
                     onOptionSelected(option)
                 },

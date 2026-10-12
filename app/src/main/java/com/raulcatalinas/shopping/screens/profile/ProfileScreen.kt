@@ -224,7 +224,7 @@ fun ProfileScreen(
                 title = "Log out",
                 content = "Are you sure you want to log out?",
                 onConfirm = {
-                    authViewModel.signOut { success ->
+                    authViewModel.signOut(context) { success ->
                         showToast(
                             context,
                             if (success) "Session closed successfully"

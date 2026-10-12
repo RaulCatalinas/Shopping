@@ -6,7 +6,6 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
@@ -36,12 +35,12 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.raulcatalinas.shopping.R
 import com.raulcatalinas.shopping.backend.auth.types.UsernameState
 import com.raulcatalinas.shopping.backend.auth.viewmodels.AuthViewModel
-import com.raulcatalinas.shopping.screens.auth.enums.AuthMode
 import com.raulcatalinas.shopping.shared.components.Input
 import com.raulcatalinas.shopping.shared.components.PasswordInput
 import com.raulcatalinas.shopping.shared.components.RequiredFieldsNote
 import com.raulcatalinas.shopping.shared.components.SegmentedButton
 import com.raulcatalinas.shopping.shared.components.UserWarning
+import com.raulcatalinas.shopping.shared.enums.AuthMode
 import com.raulcatalinas.shopping.shared.extensions.containsWhiteSpace
 import com.raulcatalinas.shopping.shared.extensions.isValidEmail
 import com.raulcatalinas.shopping.shared.extensions.verticalScrollbar
@@ -99,7 +98,8 @@ fun AuthScreen(viewModel: AuthViewModel = hiltViewModel()) {
                 options = AuthMode.entries.toList(),
                 selectedOption = authMode,
                 onOptionSelected = { authMode = it },
-                label = { it.label }
+                label = { it.label },
+                enabled = !isLoading
             )
 
             RequiredFieldsNote()
@@ -255,17 +255,12 @@ fun AuthScreen(viewModel: AuthViewModel = hiltViewModel()) {
             }
 
             OutlinedButton(
-                modifier = Modifier
-                    .wrapContentWidth()
-                    .padding(8.dp)
-                    .fillMaxWidth(),
+                modifier = Modifier.fillMaxWidth(),
                 enabled = !isLoading,
                 onClick = {
-                    viewModel.signInWithGoogle { success ->
-                        println(
-                            if (success) "Sign in with Google successful"
-                            else showToast(context, "Sign in with Google failed")
-                        )
+                    viewModel.signInWithGoogle(context) { success, errorMessage ->
+                        if (success) showToast(context, "Login with Google successful")
+                        else errorMessage?.let { showToast(context, it) }
                     }
                 }
             ) {

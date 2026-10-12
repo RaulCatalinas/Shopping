@@ -1,15 +1,20 @@
 package com.raulcatalinas.shopping.backend.auth.repositories
 
+import android.content.Context
 import android.content.Intent
 import android.util.Log
+import com.raulcatalinas.shopping.backend.auth.providers.GoogleProvider
 import com.raulcatalinas.shopping.backend.auth.repositories.constants.AUTH_REPOSITORY_TAG
 import com.raulcatalinas.shopping.backend.auth.repositories.constants.RESET_PASSWORD_REDIRECT_URL
+import com.raulcatalinas.shopping.backend.auth.repositories.constants.WHITE_SPACES_REGEX
 import com.raulcatalinas.shopping.backend.db.DbRepository
 import com.raulcatalinas.shopping.shared.types.UserProfile
 import io.github.jan.supabase.SupabaseClient
 import io.github.jan.supabase.auth.Auth
 import io.github.jan.supabase.auth.handleDeeplinks
+import io.github.jan.supabase.auth.providers.Google
 import io.github.jan.supabase.auth.providers.builtin.Email
+import io.github.jan.supabase.auth.providers.builtin.IDToken
 import io.github.jan.supabase.auth.status.SessionStatus
 import kotlinx.coroutines.flow.Flow
 import javax.inject.Inject
@@ -17,7 +22,8 @@ import javax.inject.Inject
 class AuthRepository @Inject constructor(
     private val auth: Auth,
     private val dbRepository: DbRepository,
-    private val supabaseClient: SupabaseClient
+    private val supabaseClient: SupabaseClient,
+    private val googleProvider: GoogleProvider
 ) {
     val sessionStatus: Flow<SessionStatus>
         get() = auth.sessionStatus
@@ -68,11 +74,63 @@ class AuthRepository @Inject constructor(
         }
     }
 
-    suspend fun signInWithGoogle() {
-        println("Signing in with google...")
+    suspend fun signInWithGoogle(context: Context): Result<Unit> {
+        return try {
+            val googleUserResult = googleProvider.getGoogleUser(context)
+
+            if (googleUserResult.isFailure) {
+                return Result.failure(
+                    googleUserResult.exceptionOrNull() ?: Exception("Google sign in failed")
+                )
+            }
+
+            val googleUser = googleUserResult.getOrThrow()
+
+            auth.signInWith(IDToken) {
+                idToken = googleUser.idToken
+                provider = Google
+            }
+
+            val userId =
+                getCurrentUser()
+                    ?.id
+                    ?: return Result.failure(
+                        IllegalStateException(
+                            "User ID wasn't returned after Google sign in"
+                        )
+                    )
+
+            val usernameToSave =
+                googleUser
+                    .name
+                    ?.takeIf { it.isNotBlank() }
+                    ?.replace(WHITE_SPACES_REGEX, "")
+                    ?: "User_${userId.take(6)}"
+
+            val profile = UserProfile(
+                id = userId,
+                username = usernameToSave.trim()
+            )
+
+            dbRepository.createUserProfile(profile)
+
+            Log.d(
+                AUTH_REPOSITORY_TAG,
+                "Google sign in and profile creation successful"
+            )
+            Result.success(Unit)
+        } catch (e: Exception) {
+            Log.e(
+                AUTH_REPOSITORY_TAG,
+                "Error signing in with google: ${e.message}",
+                e
+            )
+            Result.failure(e)
+        }
     }
 
-    suspend fun signOut() {
+    suspend fun signOut(context: Context) {
+        googleProvider.signOut(context)
         auth.signOut()
     }
 
@@ -121,7 +179,7 @@ class AuthRepository @Inject constructor(
         return try {
             supabaseClient.handleDeeplinks(intent)
 
-            Log.d(AUTH_REPOSITORY_TAG, "Deep link handle succfully")
+            Log.d(AUTH_REPOSITORY_TAG, "Deep link handle successfully")
 
             Result.success(Unit)
         } catch (e: Exception) {
