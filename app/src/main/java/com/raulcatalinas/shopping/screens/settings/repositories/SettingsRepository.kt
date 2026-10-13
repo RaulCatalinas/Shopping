@@ -9,8 +9,6 @@ import com.raulcatalinas.shopping.screens.settings.constants.THEME_OPTION_KEY
 import com.raulcatalinas.shopping.screens.settings.enums.LanguageOptions
 import com.raulcatalinas.shopping.screens.settings.enums.ThemeOptions
 import com.raulcatalinas.shopping.screens.settings.types.AppSettings
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.map
 import javax.inject.Inject
 
@@ -22,7 +20,7 @@ class SettingsRepository @Inject constructor(
         val LANGUAGE = stringPreferencesKey(LANGUAGE_OPTION_KEY)
     }
 
-    private val settingsFlow: Flow<AppSettings> = dataStore.data.map { preferences ->
+    private val settingsFlow = dataStore.data.map { preferences ->
         AppSettings(
             theme = preferences[Keys.THEME]?.let { value ->
                 runCatching { ThemeOptions.valueOf(value) }.getOrNull()
@@ -30,19 +28,11 @@ class SettingsRepository @Inject constructor(
 
             language = preferences[Keys.LANGUAGE]?.let { value ->
                 runCatching { LanguageOptions.valueOf(value) }.getOrNull()
-            } ?: LanguageOptions.ENGLISH
+            } ?: LanguageOptions.SYSTEM
         )
     }
 
-    fun getSettings(): Flow<AppSettings> = settingsFlow
-
-    suspend fun getTheme(): ThemeOptions {
-        return settingsFlow.firstOrNull()?.theme ?: ThemeOptions.System
-    }
-
-    suspend fun getLanguage(): LanguageOptions {
-        return settingsFlow.firstOrNull()?.language ?: LanguageOptions.ENGLISH
-    }
+    fun getSettings() = settingsFlow
 
     suspend fun setTheme(theme: ThemeOptions) {
         dataStore.edit { preferences ->
