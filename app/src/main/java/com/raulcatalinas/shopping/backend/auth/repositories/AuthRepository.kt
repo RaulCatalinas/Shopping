@@ -5,6 +5,7 @@ import android.content.Intent
 import android.util.Log
 import com.raulcatalinas.shopping.backend.auth.providers.GoogleProvider
 import com.raulcatalinas.shopping.backend.auth.repositories.constants.AUTH_REPOSITORY_TAG
+import com.raulcatalinas.shopping.backend.auth.repositories.constants.GOOGLE_AUTH_REDIRECT_URL
 import com.raulcatalinas.shopping.backend.auth.repositories.constants.RESET_PASSWORD_REDIRECT_URL
 import com.raulcatalinas.shopping.backend.auth.repositories.constants.WHITE_SPACES_REGEX
 import com.raulcatalinas.shopping.backend.db.DbRepository
@@ -86,7 +87,10 @@ class AuthRepository @Inject constructor(
 
             val googleUser = googleUserResult.getOrThrow()
 
-            auth.signInWith(IDToken) {
+            auth.signInWith(
+                provider = IDToken,
+                redirectUrl = GOOGLE_AUTH_REDIRECT_URL
+            ) {
                 idToken = googleUser.idToken
                 provider = Google
             }
