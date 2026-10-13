@@ -42,4 +42,9 @@
     <string name="login_failed">Invalid email or password</string>
     <string name="google_icon">Google icon</string>
     <string name="login_with_google">Login with Google</string>
+    <string name="home_route">Home</string>
+    <string name="settings_route">Settings</string>
+    <string name="profile_route">Profile</string>
+    <string name="language">Language</string>
+    <string name="theme">Appearance</string>
 </resources>

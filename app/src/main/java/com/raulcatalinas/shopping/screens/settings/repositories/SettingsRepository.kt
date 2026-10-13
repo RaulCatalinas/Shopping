@@ -1,5 +1,7 @@
 package com.raulcatalinas.shopping.screens.settings.repositories
 
+import androidx.appcompat.app.AppCompatDelegate
+import androidx.core.os.LocaleListCompat
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.edit
@@ -41,6 +43,21 @@ class SettingsRepository @Inject constructor(
     }
 
     suspend fun setLanguage(language: LanguageOptions) {
+        when (language) {
+            LanguageOptions.SYSTEM -> {
+                AppCompatDelegate.setApplicationLocales(
+                    LocaleListCompat.getEmptyLocaleList()
+                )
+            }
+
+            else -> {
+                val locale =
+                    LocaleListCompat.forLanguageTags(language.code)
+
+                AppCompatDelegate.setApplicationLocales(locale)
+            }
+        }
+
         dataStore.edit { preferences ->
             preferences[Keys.LANGUAGE] = language.name
         }

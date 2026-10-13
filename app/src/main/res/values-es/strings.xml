@@ -43,4 +43,9 @@
     <string name="login_failed">Correo electrónico o contraseña incorrectos</string>
     <string name="google_icon">Icono de Google</string>
     <string name="login_with_google">Iniciar sesión con Google</string>
+    <string name="home_route">Inicio</string>
+    <string name="settings_route">Ajustes</string>
+    <string name="profile_route">Perfil</string>
+    <string name="language">Idioma</string>
+    <string name="theme">Apariencia</string>
 </resources>

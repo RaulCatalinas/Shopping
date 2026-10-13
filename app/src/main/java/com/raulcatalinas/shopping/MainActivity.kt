@@ -2,10 +2,11 @@ package com.raulcatalinas.shopping
 
 import android.content.Intent
 import android.os.Bundle
-import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.viewModels
+import androidx.annotation.StringRes
+import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Home
@@ -19,6 +20,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
@@ -42,7 +44,7 @@ import com.raulcatalinas.shopping.ui.theme.ShoppingTheme
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
-class MainActivity : ComponentActivity() {
+class MainActivity : AppCompatActivity() {
     private val authViewModel: AuthViewModel by viewModels()
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -50,7 +52,6 @@ class MainActivity : ComponentActivity() {
 
         super.onCreate(savedInstanceState)
 
-        // Solo en un arranque nuevo, no cuando la Activity se recrea
         if (savedInstanceState == null) handlePasswordResetIntent(intent)
 
         enableEdgeToEdge()
@@ -131,11 +132,11 @@ fun ShoppingApp(
                     icon = {
                         Icon(
                             imageVector = destination.icon,
-                            contentDescription = destination.label,
+                            contentDescription = stringResource(destination.labelRes),
                             modifier = Modifier.size(destination.iconSize.dp)
                         )
                     },
-                    label = { Text(destination.label) },
+                    label = { Text(stringResource(destination.labelRes)) },
                     selected = isSelected,
                     onClick = {
                         if (
@@ -202,7 +203,7 @@ fun ShoppingApp(
 }
 
 enum class AppDestinations(
-    val label: String,
+    @StringRes val labelRes: Int,
     val icon: ImageVector,
     val iconSize: Int,
     val requiresAuth: Boolean,
@@ -210,14 +211,14 @@ enum class AppDestinations(
     val content: @Composable () -> Unit,
 ) {
     HOME(
-        label = "Home",
+        labelRes = R.string.home_route,
         icon = Icons.Default.Home,
         iconSize = 24,
         requiresAuth = true,
         content = { HomeScreen() }
     ),
     PROFILE(
-        label = "Profile",
+        labelRes = R.string.profile_route,
         icon = Icons.Default.Person,
         iconSize = 24,
         requiresAuth = true,
@@ -225,7 +226,7 @@ enum class AppDestinations(
         content = { ProfileScreen() }
     ),
     SETTINGS(
-        label = "Settings",
+        labelRes = R.string.settings_route,
         icon = Icons.Default.Settings,
         iconSize = 24,
         requiresAuth = false,
