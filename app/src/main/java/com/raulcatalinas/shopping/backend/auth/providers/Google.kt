@@ -17,13 +17,16 @@ class GoogleProvider @Inject constructor() {
     suspend fun getGoogleUser(context: Context): Result<GoogleUserDto> {
         val credentialManager = CredentialManager.create(context)
 
-        val googleOption = GetSignInWithGoogleOption
-            .Builder(BuildConfig.GOOGLE_WEB_CLIENT_ID)
-            .build()
+        val googleOption =
+            GetSignInWithGoogleOption
+                .Builder(BuildConfig.GOOGLE_WEB_CLIENT_ID)
+                .build()
 
-        val request = GetCredentialRequest.Builder()
-            .addCredentialOption(googleOption)
-            .build()
+        val request =
+            GetCredentialRequest
+                .Builder()
+                .addCredentialOption(googleOption)
+                .build()
 
         return try {
             val result = credentialManager.getCredential(context, request)
