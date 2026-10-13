@@ -6,7 +6,6 @@ import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.stringPreferencesKey
-import com.raulcatalinas.shopping.screens.settings.constants.LANGUAGE_OPTION_KEY
 import com.raulcatalinas.shopping.screens.settings.constants.THEME_OPTION_KEY
 import com.raulcatalinas.shopping.screens.settings.enums.LanguageOptions
 import com.raulcatalinas.shopping.screens.settings.enums.ThemeOptions
@@ -19,18 +18,13 @@ class SettingsRepository @Inject constructor(
 ) {
     private object Keys {
         val THEME = stringPreferencesKey(THEME_OPTION_KEY)
-        val LANGUAGE = stringPreferencesKey(LANGUAGE_OPTION_KEY)
     }
 
     private val settingsFlow = dataStore.data.map { preferences ->
         AppSettings(
             theme = preferences[Keys.THEME]?.let { value ->
                 runCatching { ThemeOptions.valueOf(value) }.getOrNull()
-            } ?: ThemeOptions.System,
-
-            language = preferences[Keys.LANGUAGE]?.let { value ->
-                runCatching { LanguageOptions.valueOf(value) }.getOrNull()
-            } ?: LanguageOptions.SYSTEM
+            } ?: ThemeOptions.System
         )
     }
 
@@ -42,24 +36,28 @@ class SettingsRepository @Inject constructor(
         }
     }
 
-    suspend fun setLanguage(language: LanguageOptions) {
-        when (language) {
-            LanguageOptions.SYSTEM -> {
-                AppCompatDelegate.setApplicationLocales(
-                    LocaleListCompat.getEmptyLocaleList()
-                )
-            }
-
-            else -> {
-                val locale =
-                    LocaleListCompat.forLanguageTags(language.code)
-
-                AppCompatDelegate.setApplicationLocales(locale)
-            }
+    fun setLanguage(language: LanguageOptions) {
+        val locales = if (language == LanguageOptions.SYSTEM) {
+            LocaleListCompat.getEmptyLocaleList()
+        } else {
+            LocaleListCompat.forLanguageTags(language.code)
         }
 
-        dataStore.edit { preferences ->
-            preferences[Keys.LANGUAGE] = language.name
-        }
+        AppCompatDelegate.setApplicationLocales(locales)
+    }
+
+    // Reads the language that is really applied, even if the user changed it
+    // from the system settings (Android 13+)
+    fun getCurrentLanguage(): LanguageOptions {
+        val locales = AppCompatDelegate.getApplicationLocales()
+
+        if (locales.isEmpty) return LanguageOptions.SYSTEM
+
+        val language = locales[0]?.language
+
+        return LanguageOptions
+            .entries
+            .firstOrNull { it.code == language }
+            ?: LanguageOptions.SYSTEM
     }
 }

@@ -42,4 +42,6 @@ class SettingsViewModel @Inject constructor(
             settingsRepository.setLanguage(language)
         }
     }
+
+    fun getCurrentLanguage() = settingsRepository.getCurrentLanguage()
 }

@@ -70,7 +70,7 @@ fun SettingsScreen(
 
             SegmentedButton(
                 options = languageOptions,
-                selectedOption = settings.language,
+                selectedOption = viewModel.getCurrentLanguage(),
                 onOptionSelected = { newLanguage ->
                     viewModel.setLanguage(newLanguage)
                 },
