@@ -11,6 +11,7 @@ import com.google.android.libraries.identity.googleid.GoogleIdTokenCredential
 import com.raulcatalinas.shopping.BuildConfig
 import com.raulcatalinas.shopping.backend.auth.providers.constants.GOOGLE_PROVIDER_TAG
 import com.raulcatalinas.shopping.shared.dto.GoogleUserDto
+import kotlinx.coroutines.CancellationException
 import javax.inject.Inject
 
 class GoogleProvider @Inject constructor() {
@@ -48,7 +49,6 @@ class GoogleProvider @Inject constructor() {
             Result.success(
                 GoogleUserDto(
                     idToken = googleCredential.idToken,
-                    email = googleCredential.id,
                     name = googleCredential.displayName
                 )
             )
@@ -62,12 +62,10 @@ class GoogleProvider @Inject constructor() {
             CredentialManager
                 .create(context)
                 .clearCredentialState(ClearCredentialStateRequest())
+        } catch (e: CancellationException) {
+            throw e
         } catch (e: Exception) {
-            Log.e(
-                GOOGLE_PROVIDER_TAG,
-                "Error clearing credential state: ${e.message}",
-                e
-            )
+            Log.e(GOOGLE_PROVIDER_TAG, "Error clearing credential state: ${e.message}", e)
         }
     }
 }

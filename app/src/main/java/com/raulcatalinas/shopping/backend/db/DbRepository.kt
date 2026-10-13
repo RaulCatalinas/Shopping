@@ -4,13 +4,14 @@ import android.util.Log
 import com.raulcatalinas.shopping.backend.db.constants.CHECK_USERNAME_EXISTS_RPC
 import com.raulcatalinas.shopping.backend.db.constants.DB_REPOSITORY_TAG
 import com.raulcatalinas.shopping.backend.db.constants.DELETE_USER_RPC
+import com.raulcatalinas.shopping.backend.db.constants.ENSURE_USER_PROFILE_RPC
 import com.raulcatalinas.shopping.backend.db.constants.IdColumn
 import com.raulcatalinas.shopping.backend.db.constants.ListIdColumn
-import com.raulcatalinas.shopping.backend.db.constants.PROFILE_EXISTS_RPC
 import com.raulcatalinas.shopping.backend.db.constants.TABLE_SHOPPING_ELEMENTS
 import com.raulcatalinas.shopping.backend.db.constants.TABLE_SHOPPING_LISTS
 import com.raulcatalinas.shopping.backend.db.constants.TABLE_SHOPPING_PROFILES
 import com.raulcatalinas.shopping.backend.db.dto.CheckUsernameParams
+import com.raulcatalinas.shopping.shared.dto.EnsureProfileParams
 import com.raulcatalinas.shopping.shared.dto.ShoppingElementDto
 import com.raulcatalinas.shopping.shared.dto.ShoppingListDto
 import com.raulcatalinas.shopping.shared.dto.UserProfileDto
@@ -151,25 +152,20 @@ class DbRepository @Inject constructor(
         }
     }
 
-    suspend fun checkProfileExists(): Result<Boolean> {
+    // DbRepository.kt
+// Creates the profile if it does not exist. Returns failure if the call itself failed.
+    suspend fun ensureUserProfile(username: String): Result<Unit> {
         return try {
-            // No params: the SQL function reads the user id from the session token
-            val exists =
-                db
-                    .rpc(PROFILE_EXISTS_RPC)
-                    .decodeAs<Boolean>()
-
-            Result.success(exists)
-        } catch (e: CancellationException) {
-            // Never swallow cancellation, or a canceled coroutine keeps running
-            throw e
-        } catch (e: Exception) {
-            Log.e(
-                DB_REPOSITORY_TAG,
-                "Error checking profile: ${e.message}",
-                e
+            db.rpc(
+                function = ENSURE_USER_PROFILE_RPC,
+                parameters = EnsureProfileParams(username = username.trim())
             )
 
+            Result.success(Unit)
+        } catch (e: CancellationException) {
+            throw e
+        } catch (e: Exception) {
+            Log.e(DB_REPOSITORY_TAG, "Error ensuring profile: ${e.message}", e)
             Result.failure(e)
         }
     }

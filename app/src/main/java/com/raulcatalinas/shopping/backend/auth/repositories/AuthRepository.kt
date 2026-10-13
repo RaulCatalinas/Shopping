@@ -17,6 +17,7 @@ import io.github.jan.supabase.auth.providers.Google
 import io.github.jan.supabase.auth.providers.builtin.Email
 import io.github.jan.supabase.auth.providers.builtin.IDToken
 import io.github.jan.supabase.auth.status.SessionStatus
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.flow.Flow
 import javax.inject.Inject
 
@@ -99,9 +100,7 @@ class AuthRepository @Inject constructor(
                 getCurrentUser()
                     ?.id
                     ?: return Result.failure(
-                        IllegalStateException(
-                            "User ID wasn't returned after Google sign in"
-                        )
+                        IllegalStateException("User ID wasn't returned after Google sign in")
                     )
 
             val usernameToSave =
@@ -111,24 +110,15 @@ class AuthRepository @Inject constructor(
                     ?.replace(WHITE_SPACES_REGEX, "")
                     ?: "User_${userId.take(6)}"
 
-            val profile = UserProfile(
-                id = userId,
-                username = usernameToSave.trim()
-            )
+            dbRepository
+                .ensureUserProfile(usernameToSave)
+                .getOrElse { return Result.failure(it) }
 
-            dbRepository.createUserProfile(profile)
-
-            Log.d(
-                AUTH_REPOSITORY_TAG,
-                "Google sign in and profile creation successful"
-            )
             Result.success(Unit)
+        } catch (e: CancellationException) {
+            throw e
         } catch (e: Exception) {
-            Log.e(
-                AUTH_REPOSITORY_TAG,
-                "Error signing in with google: ${e.message}",
-                e
-            )
+            Log.e(AUTH_REPOSITORY_TAG, "Error signing in with google: ${e.message}", e)
             Result.failure(e)
         }
     }
