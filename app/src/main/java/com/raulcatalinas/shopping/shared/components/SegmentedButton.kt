@@ -18,7 +18,7 @@ fun <T> SegmentedButton(
     options: List<T>,
     selectedOption: T,
     onOptionSelected: (T) -> Unit,
-    label: (T) -> String,
+    label: @Composable (T) -> String
 ) {
     SingleChoiceSegmentedButtonRow(
         modifier = modifier

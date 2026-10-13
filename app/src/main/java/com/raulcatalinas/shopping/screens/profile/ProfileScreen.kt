@@ -35,9 +35,11 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.raulcatalinas.shopping.R
 import com.raulcatalinas.shopping.backend.auth.types.UsernameState
 import com.raulcatalinas.shopping.backend.auth.viewmodels.AuthViewModel
 import com.raulcatalinas.shopping.backend.profiles.viewModels.ProfileViewModel
@@ -79,6 +81,13 @@ fun ProfileScreen(
     val canSave =
         !profileViewModel.isLoading && userNameMinimumCharsReached && isUsernameValid && !isSameUsername
 
+    val usernameUpdatedMessage = stringResource(R.string.username_updated)
+    val usernameUpdateFailedMessage = stringResource(R.string.username_update_failed)
+    val seasonCloseSuccessfully = stringResource(R.string.session_closed_successfully)
+    val seasonCloseFailed = stringResource(R.string.session_closed_failed)
+    val accountDeletedSuccessfully = stringResource(R.string.account_deleted_successfully)
+    val accountDeletedFailed = stringResource(R.string.account_deleted_failed)
+
     LaunchedEffect(Unit) {
         profileViewModel.fetchUserProfile()
     }
@@ -102,22 +111,27 @@ fun ProfileScreen(
         Column(
             modifier = Modifier
                 .padding(paddingValues)
-                .fillMaxWidth()
                 .verticalScrollbar(scrollState)
                 .verticalScroll(scrollState)
-                .padding(horizontal = 20.dp, vertical = 16.dp),
+                .padding(horizontal = 20.dp, vertical = 16.dp)
+                .fillMaxWidth(),
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
             Text(
-                text = if (profileViewModel.username.isNotBlank()) "Hello, ${profileViewModel.username}!" else "Your Profile",
+                text =
+                    if (profileViewModel.username.isNotBlank()) stringResource(
+                        R.string.hello_username,
+                        profileViewModel.username
+                    )
+                    else stringResource(R.string.your_profile),
                 style = MaterialTheme.typography.headlineMedium,
                 color = MaterialTheme.colorScheme.onBackground
             )
 
             Spacer(modifier = Modifier.height(8.dp))
 
-            SectionHeader(title = "Profile details")
+            SectionHeader(title = stringResource(R.string.profile_details))
 
             RequiredFieldsNote()
 
@@ -125,7 +139,7 @@ fun ProfileScreen(
                 isOutlined = true,
                 enabled = !profileViewModel.isLoading,
                 lineLimits = TextFieldLineLimits.SingleLine,
-                placeholder = "e.g. JohnDoe",
+                placeholder = stringResource(R.string.example_username),
                 showCharacterCounter = true,
                 minimumCharacterCount = 3,
                 clearSignal = clearSignal,
@@ -135,14 +149,19 @@ fun ProfileScreen(
                     usernameState is UsernameState.Taken
                             || usernameState is UsernameState.Error
                             || containsWhiteSpace,
-                supportingText = { UserWarning("No spaces allowed") },
+                supportingText = {
+                    UserWarning(
+                        stringResource(R.string.no_spaces_allowed)
+                    )
+                },
                 trailingIcon = trailingIcon@{
                     if (isSameUsername) return@trailingIcon
                     if (username.isBlank()) return@trailingIcon
                     if (containsWhiteSpace) {
                         Icon(
                             imageVector = Icons.Default.Error,
-                            contentDescription = "Invalid username format",
+                            contentDescription =
+                                stringResource(R.string.invalid_username_format),
                             tint = Color(0xFFFF3B30)
                         )
 
@@ -160,7 +179,8 @@ fun ProfileScreen(
                         is UsernameState.Available -> {
                             Icon(
                                 imageVector = Icons.Default.CheckCircle,
-                                contentDescription = "Username available",
+                                contentDescription =
+                                    stringResource(R.string.username_available),
                                 tint = Color(0xFF34C759)
                             )
                         }
@@ -168,7 +188,8 @@ fun ProfileScreen(
                         is UsernameState.Taken, is UsernameState.Error -> {
                             Icon(
                                 imageVector = Icons.Default.Error,
-                                contentDescription = "Username unavailable",
+                                contentDescription =
+                                    stringResource(R.string.username_unavailable),
                                 tint = Color(0xFFFF3B30)
                             )
                         }
@@ -187,18 +208,12 @@ fun ProfileScreen(
                     profileViewModel.updateUsername { success ->
                         if (success) {
                             clearSignal++
-                            showToast(
-                                context,
-                                "Username updated successfully"
-                            )
+                            showToast(context, usernameUpdatedMessage)
 
                             return@updateUsername
                         }
 
-                        showToast(
-                            context,
-                            "Failed to update username"
-                        )
+                        showToast(context, usernameUpdateFailedMessage)
                     }
                 },
                 enabled = canSave
@@ -211,24 +226,24 @@ fun ProfileScreen(
                     return@OutlinedButton
                 }
 
-                Text("Save changes")
+                Text(stringResource(R.string.save_changes))
             }
 
             Spacer(modifier = Modifier.height(8.dp))
             HorizontalDivider()
             Spacer(modifier = Modifier.height(8.dp))
 
-            SectionHeader(title = "Account")
+            SectionHeader(title = stringResource(R.string.account))
 
             ConfirmDialog(
-                title = "Log out",
-                content = "Are you sure you want to log out?",
+                title = stringResource(R.string.log_out),
+                content = stringResource(R.string.log_out_confirm_dialog_body),
                 onConfirm = {
                     authViewModel.signOut(context) { success ->
                         showToast(
                             context,
-                            if (success) "Session closed successfully"
-                            else "We were unable to log you out; please try again later"
+                            if (success) seasonCloseSuccessfully
+                            else seasonCloseFailed
                         )
                     }
                 },
@@ -237,20 +252,22 @@ fun ProfileScreen(
                         modifier = Modifier.fillMaxWidth(),
                         onClick = open
                     ) {
-                        Text("Log out")
+                        Text(stringResource(R.string.log_out))
                     }
                 }
             )
 
             ConfirmDialog(
-                title = "Delete account",
-                content = "Are you sure you want to delete your account? This action cannot be undone.",
+                title = stringResource(R.string.delete_account),
+                content = stringResource(
+                    R.string.delete_account_confirm_dialog_body
+                ),
                 onConfirm = {
                     authViewModel.deleteAccount { success ->
                         showToast(
                             context,
-                            if (success) "Account deleted successfully"
-                            else "We were unable to delete your account; please try again later"
+                            if (success) accountDeletedSuccessfully
+                            else accountDeletedFailed
                         )
                     }
                 },
@@ -263,7 +280,7 @@ fun ProfileScreen(
                             contentColor = MaterialTheme.colorScheme.onError
                         )
                     ) {
-                        Text("Delete account")
+                        Text(stringResource(R.string.delete_account))
                     }
                 }
             )

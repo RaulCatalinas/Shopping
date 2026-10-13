@@ -28,6 +28,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
@@ -83,6 +84,12 @@ fun AuthScreen(viewModel: AuthViewModel = hiltViewModel()) {
                 && !password.containsWhiteSpace()
     }
 
+    val emailIsRequiredMessage = stringResource(R.string.email_is_required)
+    val enterValidEmailAddressMessage = stringResource(R.string.enter_valid_email_address)
+    val resetLinkSentSuccessfullyMessage = stringResource(R.string.reset_link_sent_successfully)
+    val resetLinkSentFailedMessage = stringResource(R.string.reset_link_sent_failed)
+    val loginFailedMessage = stringResource(R.string.login_failed)
+
     Scaffold { paddingValues ->
         Column(
             modifier = Modifier
@@ -98,7 +105,7 @@ fun AuthScreen(viewModel: AuthViewModel = hiltViewModel()) {
                 options = AuthMode.entries.toList(),
                 selectedOption = authMode,
                 onOptionSelected = { authMode = it },
-                label = { it.label },
+                label = { stringResource(it.labelRes) },
                 enabled = !isLoading
             )
 
@@ -116,13 +123,21 @@ fun AuthScreen(viewModel: AuthViewModel = hiltViewModel()) {
                     minimumCharacterCount = 3,
                     onTooShort = { userNameMinimumCharsReached = false },
                     onMinimumReached = { userNameMinimumCharsReached = true },
-                    supportingText = { UserWarning("No spaces allowed") },
+                    supportingText = {
+                        UserWarning(
+                            stringResource(
+                                R.string.no_spaces_allowed
+                            )
+                        )
+                    },
                     trailingIcon = trailingIcon@{
                         if (username.isBlank()) return@trailingIcon
                         if (containsWhiteSpace) {
                             Icon(
                                 imageVector = Icons.Default.Error,
-                                contentDescription = "Invalid username format",
+                                contentDescription = stringResource(
+                                    R.string.invalid_username_format
+                                ),
                                 tint = Color(0xFFFF3B30)
                             )
 
@@ -140,7 +155,9 @@ fun AuthScreen(viewModel: AuthViewModel = hiltViewModel()) {
                             is UsernameState.Available -> {
                                 Icon(
                                     imageVector = Icons.Default.CheckCircle,
-                                    contentDescription = "Username available",
+                                    contentDescription = stringResource(
+                                        R.string.username_available
+                                    ),
                                     tint = Color(0xFF34C759)
                                 )
                             }
@@ -148,7 +165,9 @@ fun AuthScreen(viewModel: AuthViewModel = hiltViewModel()) {
                             is UsernameState.Taken, is UsernameState.Error -> {
                                 Icon(
                                     imageVector = Icons.Default.Error,
-                                    contentDescription = "Username unavailable",
+                                    contentDescription = stringResource(
+                                        R.string.username_unavailable
+                                    ),
                                     tint = Color(0xFFFF3B30)
                                 )
                             }
@@ -165,7 +184,7 @@ fun AuthScreen(viewModel: AuthViewModel = hiltViewModel()) {
             Input(
                 enabled = !isLoading,
                 keyboardType = KeyboardType.Email,
-                placeholder = "Email",
+                placeholder = stringResource(R.string.email),
             ) {
                 email = it
             }
@@ -183,7 +202,7 @@ fun AuthScreen(viewModel: AuthViewModel = hiltViewModel()) {
                     enabled = !isLoading,
                     onTooShort = { confirmedPasswordMinimumCharsReached = false },
                     onMinimumReached = { confirmedPasswordMinimumCharsReached = true },
-                    placeHolder = "Confirm Password"
+                    placeHolder = stringResource(R.string.confirm_password)
                 ) {
                     confirmedPassword = it
                 }
@@ -195,13 +214,13 @@ fun AuthScreen(viewModel: AuthViewModel = hiltViewModel()) {
                     enabled = !isLoading,
                     onClick = onClick@{
                         if (email.containsWhiteSpace()) {
-                            showToast(context, "Email is required")
+                            showToast(context, emailIsRequiredMessage)
 
                             return@onClick
                         }
 
                         if (!email.isValidEmail()) {
-                            showToast(context, "Please enter a valid email address")
+                            showToast(context, enterValidEmailAddressMessage)
 
                             return@onClick
                         }
@@ -209,13 +228,13 @@ fun AuthScreen(viewModel: AuthViewModel = hiltViewModel()) {
                         viewModel.sentResetPasswordEmail(email) {
                             showToast(
                                 context,
-                                if (it) "Reset link sent to your email"
-                                else "Failed to send reset email. Please try again."
+                                if (it) resetLinkSentSuccessfullyMessage
+                                else resetLinkSentFailedMessage
                             )
                         }
                     }
                 ) {
-                    Text("Reset Password")
+                    Text(stringResource(R.string.reset_password))
                 }
             }
             Button(
@@ -238,7 +257,7 @@ fun AuthScreen(viewModel: AuthViewModel = hiltViewModel()) {
 
                     viewModel.signIn(email, password) {
                         if (it) println("Login successful")
-                        else showToast(context, "Invalid email or password")
+                        else showToast(context, loginFailedMessage)
                     }
                 }
             ) {
@@ -251,7 +270,12 @@ fun AuthScreen(viewModel: AuthViewModel = hiltViewModel()) {
                     return@Button
                 }
 
-                Text(if (authMode == AuthMode.SIGN_UP) "Sign Up" else "Login")
+                Text(
+                    if (authMode == AuthMode.SIGN_UP) stringResource(
+                        R.string.sign_up
+                    )
+                    else stringResource(R.string.login)
+                )
             }
 
             OutlinedButton(
@@ -259,7 +283,7 @@ fun AuthScreen(viewModel: AuthViewModel = hiltViewModel()) {
                 enabled = !isLoading,
                 onClick = {
                     viewModel.signInWithGoogle(context) { success, errorMessage ->
-                        if (success) showToast(context, "Login with Google successful")
+                        if (success) println("Login with Google successful")
                         else errorMessage?.let { showToast(context, it) }
                     }
                 }
@@ -279,10 +303,10 @@ fun AuthScreen(viewModel: AuthViewModel = hiltViewModel()) {
                 ) {
                     Icon(
                         painterResource(R.drawable.google_icon),
-                        contentDescription = "Google Icon"
+                        contentDescription = stringResource(R.string.google_icon)
                     )
 
-                    Text("Login with Google")
+                    Text(stringResource(R.string.login_with_google))
                 }
             }
         }

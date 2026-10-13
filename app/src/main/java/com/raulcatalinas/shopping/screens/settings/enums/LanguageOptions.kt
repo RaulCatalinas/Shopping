@@ -1,6 +1,10 @@
 package com.raulcatalinas.shopping.screens.settings.enums
 
-enum class LanguageOptions(val label: String) {
-    ENGLISH("English"),
-    SPANISH("Spanish")
+import androidx.annotation.StringRes
+import com.raulcatalinas.shopping.R
+
+enum class LanguageOptions(@StringRes val labelRes: Int) {
+    ENGLISH(R.string.english),
+    SPANISH(R.string.spanish),
+    SYSTEM(R.string.system)
 }

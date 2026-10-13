@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string name="yes_btn">Si</string>
+    <string name="show_password">Mostrar contraseña</string>
+    <string name="hide_password">Ocultar contraseña</string>
+    <string name="all_fields_are_required">Todos los campos son obligatorios</string>
+    <string name="login">Iniciar sesión</string>
+    <string name="sign_up">Registrarse</string>
+    <string name="english">Inglés</string>
+    <string name="spanish">Español</string>
+    <string name="system">Sistema</string>
+    <string name="light_theme">Claro</string>
+    <string name="dark_theme">Oscuro</string>
+    <string name="hello_username">Hola, %1$s!</string>
+    <string name="your_profile">Tu perfil</string>
+    <string name="profile_details">Detalles del perfil</string>
+    <string name="example_username">Por ejemplo: JuanPerez</string>
+    <string name="no_spaces_allowed">No se permiten espacios</string>
+    <string name="invalid_username_format">Formato de nombre de usuario no válido</string>
+    <string name="username_available">Nombre de usuario disponible</string>
+    <string name="username_unavailable">El nombre de usuario no está disponible</string>
+    <string name="username_updated">Nombre de usuario actualizado</string>
+    <string name="username_update_failed">No se pudo actualizar el nombre de usuario</string>
+    <string name="save_changes">Guardar cambios</string>
+    <string name="account">Cuenta</string>
+    <string name="log_out">Cerrar sesión</string>
+    <string name="log_out_confirm_dialog_body">¿Seguro que quieres cerrar la sesión?</string>
+    <string name="session_closed_successfully">La sesión se ha cerrado correctamente</string>
+    <string name="session_closed_failed">No hemos podido cerrar tu sesión; por favor, vuelve a intentarlo más tarde.</string>
+    <string name="delete_account">Eliminar cuenta</string>
+    <string name="delete_account_confirm_dialog_body">¿Estás seguro de que quieres eliminar tu cuenta? Esta acción no se puede deshacer.</string>
+    <string name="account_deleted_successfully">La cuenta se ha eliminado correctamente</string>
+    <string name="account_deleted_failed">No hemos podido eliminar tu cuenta; por favor, vuelve a intentarlo más tarde.</string>
+    <string name="email">Correo electrónico</string>
+    <string name="confirm_password">Confirmar contraseña</string>
+    <string name="password">Contraseña</string>
+    <string name="email_is_required">Es obligatorio introducir una dirección de correo electrónico</string>
+    <string name="enter_valid_email_address">Introduce una dirección de correo electrónico válida</string>
+    <string name="reset_link_sent_successfully">Se ha enviado un enlace de restablecimiento a tu correo electrónico</string>
+    <string name="reset_link_sent_failed">No se ha podido enviar el correo electrónico de restablecimiento. Inténtalo de nuevo.</string>
+    <string name="reset_password">Restablecer contraseña</string>
+    <string name="login_failed">Correo electrónico o contraseña incorrectos</string>
+    <string name="google_icon">Icono de Google</string>
+    <string name="login_with_google">Iniciar sesión con Google</string>
+</resources>

@@ -20,14 +20,16 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.KeyboardType
+import com.raulcatalinas.shopping.R
 import com.raulcatalinas.shopping.shared.extensions.containsWhiteSpace
 
 @Composable
 fun PasswordInput(
     modifier: Modifier = Modifier,
     enabled: Boolean = true,
-    placeHolder: String = "Password",
+    placeHolder: String = stringResource(R.string.password),
     onTooShort: (() -> Unit)? = null,
     onMinimumReached: (() -> Unit)? = null,
     onPasswordTyping: (String) -> Unit
@@ -76,8 +78,8 @@ fun PasswordInput(
                 Icon(
                     imageVector = icon,
                     contentDescription =
-                        if (passwordHidden) "Show password"
-                        else "Hide password"
+                        if (passwordHidden) stringResource(R.string.show_password)
+                        else stringResource(R.string.hide_password)
                 )
             }
         },

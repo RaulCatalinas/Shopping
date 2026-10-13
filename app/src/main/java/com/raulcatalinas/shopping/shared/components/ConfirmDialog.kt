@@ -9,6 +9,8 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.res.stringResource
+import com.raulcatalinas.shopping.R
 
 @Composable
 fun ConfirmDialog(
@@ -34,7 +36,7 @@ fun ConfirmDialog(
                     onConfirm()
                 }
             ) {
-                Text("Yes")
+                Text(stringResource(R.string.yes_btn))
             }
         },
         dismissButton = {
