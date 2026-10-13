@@ -1,4 +1,4 @@
-package com.raulcatalinas.shopping.shared.dto
+package com.raulcatalinas.shopping.backend.db.dto
 
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable

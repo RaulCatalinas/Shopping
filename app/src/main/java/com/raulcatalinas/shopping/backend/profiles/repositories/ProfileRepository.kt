@@ -2,7 +2,7 @@ package com.raulcatalinas.shopping.backend.profiles.repositories
 
 import com.raulcatalinas.shopping.backend.auth.repositories.AuthRepository
 import com.raulcatalinas.shopping.backend.db.DbRepository
-import com.raulcatalinas.shopping.shared.dto.UserProfileDto
+import com.raulcatalinas.shopping.backend.profiles.dto.UserProfileDto
 import com.raulcatalinas.shopping.shared.types.UserProfile
 import javax.inject.Inject
 

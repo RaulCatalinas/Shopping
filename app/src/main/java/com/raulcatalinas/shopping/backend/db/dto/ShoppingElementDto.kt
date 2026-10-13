@@ -1,13 +1,18 @@
-package com.raulcatalinas.shopping.shared.dto
+package com.raulcatalinas.shopping.backend.db.dto
 
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlin.time.Instant
 
 @Serializable
-data class UserProfileDto(
+data class ShoppingElementDto(
     val id: String,
-    val username: String,
+    val name: String,
+    val quantity: Int,
+    @SerialName("list_id")
+    val listId: String,
+    @SerialName("is_checked")
+    val isChecked: Boolean = false,
     @SerialName("created_at")
     val createdAt: Instant? = null,
     @SerialName("updated_at")

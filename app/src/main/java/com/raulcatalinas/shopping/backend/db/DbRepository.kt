@@ -11,10 +11,10 @@ import com.raulcatalinas.shopping.backend.db.constants.TABLE_SHOPPING_ELEMENTS
 import com.raulcatalinas.shopping.backend.db.constants.TABLE_SHOPPING_LISTS
 import com.raulcatalinas.shopping.backend.db.constants.TABLE_SHOPPING_PROFILES
 import com.raulcatalinas.shopping.backend.db.dto.CheckUsernameParams
-import com.raulcatalinas.shopping.shared.dto.EnsureProfileParams
-import com.raulcatalinas.shopping.shared.dto.ShoppingElementDto
-import com.raulcatalinas.shopping.shared.dto.ShoppingListDto
-import com.raulcatalinas.shopping.shared.dto.UserProfileDto
+import com.raulcatalinas.shopping.backend.db.dto.EnsureProfileParams
+import com.raulcatalinas.shopping.backend.db.dto.ShoppingElementDto
+import com.raulcatalinas.shopping.backend.db.dto.ShoppingListDto
+import com.raulcatalinas.shopping.backend.profiles.dto.UserProfileDto
 import com.raulcatalinas.shopping.shared.types.ShoppingElement
 import com.raulcatalinas.shopping.shared.types.ShoppingList
 import com.raulcatalinas.shopping.shared.types.UserProfile

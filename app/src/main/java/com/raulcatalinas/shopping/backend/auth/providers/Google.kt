@@ -10,7 +10,7 @@ import com.google.android.libraries.identity.googleid.GetSignInWithGoogleOption
 import com.google.android.libraries.identity.googleid.GoogleIdTokenCredential
 import com.raulcatalinas.shopping.BuildConfig
 import com.raulcatalinas.shopping.backend.auth.providers.constants.GOOGLE_PROVIDER_TAG
-import com.raulcatalinas.shopping.shared.dto.GoogleUserDto
+import com.raulcatalinas.shopping.backend.auth.providers.dto.GoogleUserDto
 import kotlinx.coroutines.CancellationException
 import javax.inject.Inject
 
