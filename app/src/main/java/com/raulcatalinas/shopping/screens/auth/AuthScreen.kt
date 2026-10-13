@@ -118,7 +118,7 @@ fun AuthScreen(viewModel: AuthViewModel = hiltViewModel()) {
                         usernameState is UsernameState.Taken
                                 || usernameState is UsernameState.Error
                                 || containsWhiteSpace,
-                    placeholder = "Username",
+                    placeholder = stringResource(R.string.username),
                     showCharacterCounter = true,
                     minimumCharacterCount = 3,
                     onTooShort = { userNameMinimumCharsReached = false },

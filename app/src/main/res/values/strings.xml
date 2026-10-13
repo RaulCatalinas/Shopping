@@ -47,4 +47,5 @@
     <string name="profile_route">Profile</string>
     <string name="language">Language</string>
     <string name="theme">Appearance</string>
+    <string name="username">Username</string>
 </resources>
