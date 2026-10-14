@@ -1,57 +1,75 @@
+<?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name" translatable="false">Shopping</string>
+
+    <!-- Common -->
     <string name="yes_btn">Yes</string>
+    <string name="no_btn">No</string>
     <string name="show_password">Show password</string>
     <string name="hide_password">Hide password</string>
     <string name="all_fields_are_required">All fields are required</string>
-    <string name="login">Login</string>
+
+    <!-- Auth -->
+    <string name="login">Log in</string>
     <string name="sign_up">Sign up</string>
+    <string name="email">Email</string>
+    <string name="password">Password</string>
+    <string name="confirm_password">Confirm password</string>
+    <string name="email_is_required">Enter your email</string>
+    <string name="enter_valid_email_address">Enter a valid email</string>
+    <string name="reset_password">Reset password</string>
+    <string name="reset_link_sent_successfully">Link sent. Check your email.</string>
+    <string name="reset_link_sent_failed">Couldn\'t send the email. Try again.</string>
+    <string name="login_failed">Wrong email or password</string>
+    <string name="google_icon">Google logo</string>
+    <string name="login_with_google">Continue with Google</string>
+
+    <!-- Google sign in errors -->
+    <string name="google_error_reauth">Google needs to confirm it\'s you. Log in to your Google account again in your phone\'s settings, then try again.</string>
+    <string name="google_error_cancelled">Log in cancelled.</string>
+    <string name="google_error_no_account">No Google account on this phone. Add one in your phone\'s settings and try again.</string>
+    <string name="google_error_unavailable">Google login isn\'t working on this phone. Update the Google Play Store app and try again.</string>
+    <string name="google_error_network">No internet connection. Check it and try again.</string>
+    <string name="google_error_generic">Couldn\'t log in with Google. Try again.</string>
+
+    <!-- Navigation -->
+    <string name="home_route">Home</string>
+    <string name="settings_route">Settings</string>
+    <string name="profile_route">Profile</string>
+
+    <!-- Settings -->
+    <string name="language">Language</string>
+    <string name="theme">Appearance</string>
     <string name="english">English</string>
     <string name="spanish">Spanish</string>
     <string name="system">System</string>
     <string name="light_theme">Light</string>
     <string name="dark_theme">Dark</string>
+
+    <!-- Profile -->
     <string name="hello_username">Hello, %1$s!</string>
-    <string name="your_profile">Your Profile</string>
+    <string name="your_profile">Your profile</string>
     <string name="profile_details">Profile details</string>
+    <string name="username">Username</string>
     <string name="example_username">For example: JohnDoe</string>
     <string name="no_spaces_allowed">No spaces allowed</string>
-    <string name="invalid_username_format">Invalid username format</string>
+    <string name="invalid_username_format">Invalid username</string>
     <string name="username_available">Username available</string>
     <string name="username_unavailable">Username unavailable</string>
     <string name="username_updated">Username updated</string>
     <string name="username_update_failed">Couldn\'t update username</string>
     <string name="save_changes">Save changes</string>
+
+    <!-- Account -->
     <string name="account">Account</string>
     <string name="log_out">Log out</string>
-    <string name="log_out_confirm_dialog_body">Are you sure you want to log out?</string>
-    <string name="session_closed_successfully">Session closed successfully</string>
-    <string name="session_closed_failed">We were unable to log you out; please try again later</string>
+    <string name="log_out_confirm_dialog_body">Do you want to log out?</string>
+    <string name="session_closed_successfully">Logged out</string>
+    <string name="session_closed_failed">Couldn\'t log you out. Try again later.</string>
     <string name="delete_account">Delete account</string>
-    <string name="delete_account_confirm_dialog_body">Are you sure you want to delete your account? This can\'t be undone.</string>
-    <string name="account_deleted_successfully">Account deleted successfully</string>
-    <string name="account_deleted_failed">We were unable to delete your account; please try again later</string>
-    <string name="email">Email</string>
-    <string name="confirm_password">Confirm password</string>
-    <string name="password">Password</string>
-    <string name="email_is_required">Email is required</string>
-    <string name="enter_valid_email_address">Please enter a valid email address</string>
-    <string name="reset_link_sent_successfully">Reset link sent to your email</string>
-    <string name="reset_link_sent_failed">Failed to send reset email. Please try again.</string>
-    <string name="reset_password">Reset password</string>
-    <string name="login_failed">Invalid email or password</string>
-    <string name="google_icon">Google icon</string>
-    <string name="login_with_google">Login with Google</string>
-    <string name="home_route">Home</string>
-    <string name="settings_route">Settings</string>
-    <string name="profile_route">Profile</string>
-    <string name="language">Language</string>
-    <string name="theme">Appearance</string>
-    <string name="username">Username</string>
-    <string name="google_error_reauth">Google needs to confirm it\'s you. Sign in to your Google account again in your phone\'s settings, then try again.</string>
-    <string name="google_error_cancelled">Sign in cancelled.</string>
-    <string name="google_error_no_account">There\'s no Google account on this phone. Add one in your phone\'s settings and try again.</string>
-    <string name="google_error_unavailable">Sign in with Google isn\'t working on this phone. Update the Google Play Store app and try again.</string>
-    <string name="google_error_network">No internet connection. Check your connection and try again.</string>
-    <string name="google_error_generic">Couldn\'t sign in with Google. Please try again.</string>
+    <string name="delete_account_confirm_dialog_body">Delete your account? This can\'t be undone.</string>
+    <string name="delete_btn">Delete</string>
+    <string name="keep_account_btn">Keep my account</string>
+    <string name="account_deleted_successfully">Account deleted</string>
+    <string name="account_deleted_failed">Couldn\'t delete your account. Try again later.</string>
 </resources>

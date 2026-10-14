@@ -262,6 +262,9 @@ fun ProfileScreen(
                 content = stringResource(
                     R.string.delete_account_confirm_dialog_body
                 ),
+                isDestructiveAction = true,
+                confirmText = stringResource(R.string.delete_btn),
+                dismissText = stringResource(R.string.keep_account_btn),
                 onConfirm = {
                     authViewModel.deleteAccount { success ->
                         showToast(
