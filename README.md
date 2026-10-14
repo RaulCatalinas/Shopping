@@ -83,4 +83,4 @@ Android only. iOS is not planned for now.
 
 ## License
 
-Private — no license defined yet.
+Licensed under the [GNU GPLv3](./LICENSE).
