@@ -82,7 +82,9 @@ class AuthRepository @Inject constructor(
 
             if (googleUserResult.isFailure) {
                 return Result.failure(
-                    googleUserResult.exceptionOrNull() ?: Exception("Google sign in failed")
+                    googleUserResult
+                        .exceptionOrNull()
+                        ?: Exception("Google sign in failed")
                 )
             }
 
@@ -129,8 +131,10 @@ class AuthRepository @Inject constructor(
     }
 
     suspend fun deleteAccount() {
-        val userId = getCurrentUser()?.id
-            ?: throw IllegalStateException("User ID was not returned")
+        val userId =
+            getCurrentUser()
+                ?.id
+                ?: throw IllegalStateException("User ID was not returned")
 
         dbRepository.deleteAccount(userId)
         auth.signOut()

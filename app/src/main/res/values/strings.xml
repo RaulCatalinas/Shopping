@@ -48,4 +48,10 @@
     <string name="language">Language</string>
     <string name="theme">Appearance</string>
     <string name="username">Username</string>
+    <string name="google_error_reauth">Google needs to confirm it\'s you. Sign in to your Google account again in your phone\'s settings, then try again.</string>
+    <string name="google_error_cancelled">Sign in cancelled.</string>
+    <string name="google_error_no_account">There\'s no Google account on this phone. Add one in your phone\'s settings and try again.</string>
+    <string name="google_error_unavailable">Sign in with Google isn\'t working on this phone. Update the Google Play Store app and try again.</string>
+    <string name="google_error_network">No internet connection. Check your connection and try again.</string>
+    <string name="google_error_generic">Couldn\'t sign in with Google. Please try again.</string>
 </resources>

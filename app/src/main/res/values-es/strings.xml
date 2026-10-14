@@ -49,4 +49,10 @@
     <string name="language">Idioma</string>
     <string name="theme">Apariencia</string>
     <string name="username">Nombre de usuario</string>
+    <string name="google_error_reauth">Google necesita confirmar que eres tú. Vuelve a iniciar sesión en tu cuenta de Google desde los ajustes del móvil e inténtalo de nuevo.</string>
+    <string name="google_error_cancelled">Inicio de sesión cancelado.</string>
+    <string name="google_error_no_account">No hay ninguna cuenta de Google en este móvil. Añade una en los ajustes e inténtalo de nuevo.</string>
+    <string name="google_error_unavailable">El inicio de sesión con Google no funciona en este móvil. Actualiza la aplicación Google Play Store e inténtalo de nuevo.</string>
+    <string name="google_error_network">Sin conexión a internet. Revisa tu conexión e inténtalo de nuevo.</string>
+    <string name="google_error_generic">No se pudo iniciar sesión con Google. Inténtalo de nuevo.</string>
 </resources>

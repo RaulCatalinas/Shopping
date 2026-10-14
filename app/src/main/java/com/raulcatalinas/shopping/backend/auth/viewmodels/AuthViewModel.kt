@@ -8,9 +8,9 @@ import androidx.lifecycle.viewModelScope
 import com.raulcatalinas.shopping.backend.auth.repositories.AuthRepository
 import com.raulcatalinas.shopping.backend.auth.types.UsernameState
 import com.raulcatalinas.shopping.backend.auth.viewmodels.constants.AUTH_VIEW_MODEL_TAG
+import com.raulcatalinas.shopping.backend.auth.viewmodels.extensions.toGoogleSignInMessage
 import com.raulcatalinas.shopping.shared.extensions.containsWhiteSpace
 import com.raulcatalinas.shopping.shared.extensions.isValidEmail
-import com.raulcatalinas.shopping.shared.extensions.toGoogleSignInMessage
 import dagger.hilt.android.lifecycle.HiltViewModel
 import io.github.jan.supabase.auth.status.SessionStatus
 import kotlinx.coroutines.FlowPreview
@@ -152,7 +152,7 @@ class AuthViewModel @Inject constructor(
                     password != confirmedPassword -> {
                         Log.e(
                             AUTH_VIEW_MODEL_TAG,
-                            "Passwords do not match for user: $username"
+                            "Passwords don't match for user: $username"
                         )
 
                         onResult(
@@ -222,9 +222,13 @@ class AuthViewModel @Inject constructor(
                     error
                 )
 
+
                 onResult(
                     false,
-                    error.toGoogleSignInMessage()
+                    context
+                        .getString(
+                            error.toGoogleSignInMessage()
+                        )
                 )
             } finally {
                 _isLoading.value = false
@@ -296,7 +300,13 @@ class AuthViewModel @Inject constructor(
                     exception
                 )
 
-                _usernameState.value = UsernameState.Error(exception?.message ?: "Unknown error")
+                _usernameState.value =
+                    UsernameState
+                        .Error(
+                            exception
+                                ?.message
+                                ?: "Unknown error"
+                        )
 
                 return@launch
             }
