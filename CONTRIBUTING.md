@@ -20,6 +20,19 @@ requests focused and reasonably small — easier to review, easier to merge.
 
 Never commit `local.properties`, keystores, or any secret.
 
+### Google sign in (optional)
+
+Google sign in only works with your own Google Cloud setup, because the debug SHA-1 is different on
+every machine:
+
+1. Create an OAuth **web** client and use its ID as `GOOGLE_WEB_CLIENT_ID`. Add the client ID and
+   secret to the Google provider in your Supabase project.
+2. Run `./gradlew signingReport` and copy the SHA-1 of the `debug` variant.
+3. Create an OAuth **Android** client with the app package name and that SHA-1.
+4. If your consent screen is in "Testing" mode, add your Google account as a test user.
+
+You can skip all of this and work with email and password sign in.
+
 ## Code style
 
 - Follow the [official Kotlin code style](https://kotlinlang.org/docs/coding-conventions.html). Use
