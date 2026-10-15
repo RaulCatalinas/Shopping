@@ -71,4 +71,5 @@
     <string name="keep_account_btn">Conservar mi cuenta</string>
     <string name="account_deleted_successfully">Cuenta eliminada</string>
     <string name="account_deleted_failed">No se pudo eliminar la cuenta. Inténtalo más tarde.</string>
+    <string name="save_new_password">Guardar nueva contraseña</string>
 </resources>

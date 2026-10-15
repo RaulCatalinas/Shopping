@@ -15,7 +15,6 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.OutlinedButton
-import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -36,6 +35,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.raulcatalinas.shopping.R
 import com.raulcatalinas.shopping.backend.auth.types.UsernameState
 import com.raulcatalinas.shopping.backend.auth.viewmodels.AuthViewModel
+import com.raulcatalinas.shopping.shared.components.AppScaffold
 import com.raulcatalinas.shopping.shared.components.Input
 import com.raulcatalinas.shopping.shared.components.PasswordInput
 import com.raulcatalinas.shopping.shared.components.RequiredFieldsNote
@@ -45,11 +45,12 @@ import com.raulcatalinas.shopping.shared.enums.AuthMode
 import com.raulcatalinas.shopping.shared.extensions.containsWhiteSpace
 import com.raulcatalinas.shopping.shared.extensions.isValidEmail
 import com.raulcatalinas.shopping.shared.extensions.verticalScrollbar
-import com.raulcatalinas.shopping.shared.utils.showToast
+import com.raulcatalinas.shopping.shared.utils.LocalSnackbarController
 
 @Composable
 fun AuthScreen(viewModel: AuthViewModel = hiltViewModel()) {
     val context = LocalContext.current
+    val snackbar = LocalSnackbarController.current
 
     val isLoading by viewModel.isLoading.collectAsStateWithLifecycle()
     val usernameState by viewModel.usernameState.collectAsStateWithLifecycle()
@@ -90,7 +91,7 @@ fun AuthScreen(viewModel: AuthViewModel = hiltViewModel()) {
     val resetLinkSentFailedMessage = stringResource(R.string.reset_link_sent_failed)
     val loginFailedMessage = stringResource(R.string.login_failed)
 
-    Scaffold { paddingValues ->
+    AppScaffold { paddingValues ->
         Column(
             modifier = Modifier
                 .padding(paddingValues)
@@ -214,20 +215,19 @@ fun AuthScreen(viewModel: AuthViewModel = hiltViewModel()) {
                     enabled = !isLoading,
                     onClick = onClick@{
                         if (email.containsWhiteSpace()) {
-                            showToast(context, emailIsRequiredMessage)
+                            snackbar.show(emailIsRequiredMessage)
 
                             return@onClick
                         }
 
                         if (!email.isValidEmail()) {
-                            showToast(context, enterValidEmailAddressMessage)
+                            snackbar.show(enterValidEmailAddressMessage)
 
                             return@onClick
                         }
 
                         viewModel.sentResetPasswordEmail(email) {
-                            showToast(
-                                context,
+                            snackbar.show(
                                 if (it) resetLinkSentSuccessfullyMessage
                                 else resetLinkSentFailedMessage
                             )
@@ -249,7 +249,7 @@ fun AuthScreen(viewModel: AuthViewModel = hiltViewModel()) {
                             confirmedPassword = confirmedPassword
                         ) { success, errorMessage ->
                             if (success) println("Sign up successful")
-                            else showToast(context, errorMessage!!)
+                            else snackbar.show(errorMessage!!)
                         }
 
                         return@Button
@@ -257,7 +257,7 @@ fun AuthScreen(viewModel: AuthViewModel = hiltViewModel()) {
 
                     viewModel.signIn(email, password) {
                         if (it) println("Login successful")
-                        else showToast(context, loginFailedMessage)
+                        else snackbar.show(loginFailedMessage)
                     }
                 }
             ) {
@@ -284,7 +284,7 @@ fun AuthScreen(viewModel: AuthViewModel = hiltViewModel()) {
                 onClick = {
                     viewModel.signInWithGoogle(context) { success, errorMessage ->
                         if (success) println("Login with Google successful")
-                        else errorMessage?.let { showToast(context, it) }
+                        else errorMessage?.let { snackbar.show(it) }
                     }
                 }
             ) {

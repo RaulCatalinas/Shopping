@@ -20,7 +20,6 @@ import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
-import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -43,6 +42,7 @@ import com.raulcatalinas.shopping.R
 import com.raulcatalinas.shopping.backend.auth.types.UsernameState
 import com.raulcatalinas.shopping.backend.auth.viewmodels.AuthViewModel
 import com.raulcatalinas.shopping.backend.profiles.viewModels.ProfileViewModel
+import com.raulcatalinas.shopping.shared.components.AppScaffold
 import com.raulcatalinas.shopping.shared.components.ConfirmDialog
 import com.raulcatalinas.shopping.shared.components.Input
 import com.raulcatalinas.shopping.shared.components.RequiredFieldsNote
@@ -50,7 +50,7 @@ import com.raulcatalinas.shopping.shared.components.SectionHeader
 import com.raulcatalinas.shopping.shared.components.UserWarning
 import com.raulcatalinas.shopping.shared.extensions.containsWhiteSpace
 import com.raulcatalinas.shopping.shared.extensions.verticalScrollbar
-import com.raulcatalinas.shopping.shared.utils.showToast
+import com.raulcatalinas.shopping.shared.utils.LocalSnackbarController
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.distinctUntilChanged
@@ -63,6 +63,8 @@ fun ProfileScreen(
     profileViewModel: ProfileViewModel = hiltViewModel()
 ) {
     val context = LocalContext.current
+    val snackbar = LocalSnackbarController.current
+
     val usernameState by authViewModel.usernameState.collectAsStateWithLifecycle()
 
     var userNameMinimumCharsReached by rememberSaveable { mutableStateOf(false) }
@@ -107,7 +109,7 @@ fun ProfileScreen(
             }
     }
 
-    Scaffold { paddingValues ->
+    AppScaffold { paddingValues ->
         Column(
             modifier = Modifier
                 .padding(paddingValues)
@@ -208,12 +210,12 @@ fun ProfileScreen(
                     profileViewModel.updateUsername { success ->
                         if (success) {
                             clearSignal++
-                            showToast(context, usernameUpdatedMessage)
+                            snackbar.show(usernameUpdatedMessage)
 
                             return@updateUsername
                         }
 
-                        showToast(context, usernameUpdateFailedMessage)
+                        snackbar.show(usernameUpdateFailedMessage)
                     }
                 },
                 enabled = canSave
@@ -240,8 +242,7 @@ fun ProfileScreen(
                 content = stringResource(R.string.log_out_confirm_dialog_body),
                 onConfirm = {
                     authViewModel.signOut(context) { success ->
-                        showToast(
-                            context,
+                        snackbar.show(
                             if (success) seasonCloseSuccessfully
                             else seasonCloseFailed
                         )
@@ -267,8 +268,7 @@ fun ProfileScreen(
                 dismissText = stringResource(R.string.keep_account_btn),
                 onConfirm = {
                     authViewModel.deleteAccount { success ->
-                        showToast(
-                            context,
+                        snackbar.show(
                             if (success) accountDeletedSuccessfully
                             else accountDeletedFailed
                         )

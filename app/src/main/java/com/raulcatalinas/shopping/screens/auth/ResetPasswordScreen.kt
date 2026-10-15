@@ -9,7 +9,6 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -19,14 +18,17 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.raulcatalinas.shopping.R
 import com.raulcatalinas.shopping.backend.auth.viewmodels.AuthViewModel
+import com.raulcatalinas.shopping.shared.components.AppScaffold
 import com.raulcatalinas.shopping.shared.components.PasswordInput
 import com.raulcatalinas.shopping.shared.extensions.containsWhiteSpace
 import com.raulcatalinas.shopping.shared.extensions.verticalScrollbar
-import com.raulcatalinas.shopping.shared.utils.showToast
+import com.raulcatalinas.shopping.shared.utils.LocalSnackbarController
 
 @Composable
 fun ResetPasswordScreen(
@@ -34,6 +36,7 @@ fun ResetPasswordScreen(
     onPasswordResetSuccess: () -> Unit = {}
 ) {
     val context = LocalContext.current
+    val snackbar = LocalSnackbarController.current
 
     val isLoading by viewModel.isLoading.collectAsStateWithLifecycle()
 
@@ -50,7 +53,7 @@ fun ResetPasswordScreen(
                 && !newPassword.containsWhiteSpace()
                 && !confirmedNewPassword.containsWhiteSpace()
 
-    Scaffold { paddingValues ->
+    AppScaffold { paddingValues ->
         Column(
             modifier = Modifier
                 .padding(paddingValues)
@@ -88,15 +91,13 @@ fun ResetPasswordScreen(
                         confirmedNewPassword
                     ) { success, errorMessage ->
                         if (success) {
-                            showToast(
-                                context,
+                            snackbar.show(
                                 "Password successfully changed"
                             )
 
                             onPasswordResetSuccess()
                         } else {
-                            showToast(
-                                context,
+                            snackbar.show(
                                 errorMessage ?: "Failed to reset password"
                             )
                         }
@@ -112,7 +113,7 @@ fun ResetPasswordScreen(
                     return@Button
                 }
 
-                Text("Save new password")
+                Text(stringResource(R.string.save_new_password))
             }
         }
     }

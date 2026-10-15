@@ -11,7 +11,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.HorizontalDivider
-import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
@@ -25,6 +24,7 @@ import com.raulcatalinas.shopping.R
 import com.raulcatalinas.shopping.screens.settings.enums.LanguageOptions
 import com.raulcatalinas.shopping.screens.settings.enums.ThemeOptions
 import com.raulcatalinas.shopping.screens.settings.viewmodels.SettingsViewModel
+import com.raulcatalinas.shopping.shared.components.AppScaffold
 import com.raulcatalinas.shopping.shared.components.SectionHeader
 import com.raulcatalinas.shopping.shared.components.SegmentedButton
 import com.raulcatalinas.shopping.shared.extensions.verticalScrollbar
@@ -40,7 +40,7 @@ fun SettingsScreen(
     val themeOptions = ThemeOptions.entries.toList()
     val languageOptions = LanguageOptions.entries.toList()
 
-    Scaffold { paddingValues ->
+    AppScaffold { paddingValues ->
         Column(
             modifier = Modifier
                 .padding(paddingValues)

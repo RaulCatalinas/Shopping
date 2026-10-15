@@ -72,4 +72,5 @@
     <string name="keep_account_btn">Keep my account</string>
     <string name="account_deleted_successfully">Account deleted</string>
     <string name="account_deleted_failed">Couldn\'t delete your account. Try again later.</string>
+    <string name="save_new_password">Save new password</string>
 </resources>
