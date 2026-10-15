@@ -52,6 +52,8 @@ class GoogleProvider @Inject constructor() {
                     name = googleCredential.displayName
                 )
             )
+        } catch (e: CancellationException) {
+            throw e
         } catch (e: Exception) {
             Result.failure(e)
         }

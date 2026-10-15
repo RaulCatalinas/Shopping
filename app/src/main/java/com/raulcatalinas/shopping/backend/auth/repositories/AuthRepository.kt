@@ -114,7 +114,11 @@ class AuthRepository @Inject constructor(
 
             dbRepository
                 .ensureUserProfile(usernameToSave)
-                .getOrElse { return Result.failure(it) }
+                .getOrElse {
+                    auth.signOut()
+
+                    return Result.failure(it)
+                }
 
             Result.success(Unit)
         } catch (e: CancellationException) {
