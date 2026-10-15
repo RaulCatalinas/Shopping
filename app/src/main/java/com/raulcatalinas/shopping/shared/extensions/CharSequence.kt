@@ -9,3 +9,14 @@ fun CharSequence?.containsWhiteSpace(): Boolean {
 fun CharSequence?.isValidEmail(): Boolean {
     return !isNullOrBlank() && Patterns.EMAIL_ADDRESS.matcher(trim()).matches()
 }
+
+fun CharSequence.toEmoji(): String {
+    val codePoint =
+        removePrefix("U+")
+            .toString()
+            .toInt(16)
+
+    return Character
+        .toChars(codePoint)
+        .concatToString()
+}

@@ -7,11 +7,15 @@ import androidx.compose.runtime.Composable
 import com.raulcatalinas.shopping.shared.utils.LocalSnackbarController
 
 @Composable
-fun AppScaffold(content: @Composable (PaddingValues) -> Unit) {
+fun AppScaffold(
+    floatingActionButton: @Composable (() -> Unit) = {},
+    content: @Composable (PaddingValues) -> Unit
+) {
     val snackbar = LocalSnackbarController.current
 
     Scaffold(
         snackbarHost = { SnackbarHost(snackbar.hostState) },
-        content = content
+        content = content,
+        floatingActionButton = floatingActionButton
     )
 }

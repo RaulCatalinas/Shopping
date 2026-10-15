@@ -73,4 +73,14 @@
     <string name="account_deleted_successfully">Account deleted</string>
     <string name="account_deleted_failed">Couldn\'t delete your account. Try again later.</string>
     <string name="save_new_password">Save new password</string>
+    <string name="home_without_lists_header">You haven\'t made any lists yet</string>
+    <string name="home_without_lists_subtitle">Create your first shopping list or join an existing one.</string>
+    <string name="create_new_list_btn">Create a new list</string>
+    <string name="join_a_list_btn">Join a list</string>
+
+    <!-- Lists -->
+    <string name="shopping_elements_remaining">%1$d of %2$d remaining</string>
+    <string name="lists_load_error">Couldn\'t load your lists. Check your connection.</string>
+    <string name="retry_btn">Retry</string>
+    <string name="all_bought">All bought</string>
 </resources>

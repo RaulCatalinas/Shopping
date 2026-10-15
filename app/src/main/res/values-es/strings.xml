@@ -72,4 +72,14 @@
     <string name="account_deleted_successfully">Cuenta eliminada</string>
     <string name="account_deleted_failed">No se pudo eliminar la cuenta. Inténtalo más tarde.</string>
     <string name="save_new_password">Guardar nueva contraseña</string>
+    <string name="home_without_lists_header">Aún no tienes listas</string>
+    <string name="home_without_lists_subtitle">Crea tu primera lista de la compra o únete a una que ya exista.</string>
+    <string name="create_new_list_btn">Crear lista nueva</string>
+    <string name="join_a_list_btn">Unirse a una lista</string>
+
+    <!-- Lists -->
+    <string name="shopping_elements_remaining">%1$d de %2$d pendientes</string>
+    <string name="lists_load_error">No se pudieron cargar tus listas. Revisa tu conexión.</string>
+    <string name="retry_btn">Reintentar</string>
+    <string name="all_bought">Todo comprado</string>
 </resources>
