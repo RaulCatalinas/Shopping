@@ -31,7 +31,12 @@ import com.raulcatalinas.shopping.screens.home.components.HomeWithoutLists
 import com.raulcatalinas.shopping.shared.components.AppScaffold
 
 @Composable
-fun HomeScreen(listsViewModel: ListsViewModel = hiltViewModel()) {
+fun HomeScreen(
+    listsViewModel: ListsViewModel = hiltViewModel(),
+    onCreateList: () -> Unit,
+    onJoinList: () -> Unit,
+    onListClick: (String) -> Unit,
+) {
     val state by listsViewModel.uiState.collectAsStateWithLifecycle()
 
     val scrollState = rememberScrollState()
@@ -46,9 +51,7 @@ fun HomeScreen(listsViewModel: ListsViewModel = hiltViewModel()) {
     AppScaffold(
         floatingActionButton = {
             if (showFloatingActionButton) {
-                FloatingActionButton(
-                    onClick = { println("Navigating to AddShoppingListScreen...") }
-                ) {
+                FloatingActionButton(onClick = onCreateList) {
                     Icon(
                         imageVector = Icons.Default.Add,
                         contentDescription = stringResource(
@@ -71,12 +74,15 @@ fun HomeScreen(listsViewModel: ListsViewModel = hiltViewModel()) {
                 if (current.lists.isEmpty()) {
                     HomeWithoutLists(
                         paddingValues = paddingValues,
-                        scrollState = scrollState
+                        scrollState = scrollState,
+                        onCreateList = onCreateList,
+                        onJoinList = onJoinList
                     )
                 } else {
                     HomeWithLists(
                         paddingValues = paddingValues,
-                        shoppingLists = current.lists
+                        shoppingLists = current.lists,
+                        onListClick = onListClick
                     )
                 }
             }

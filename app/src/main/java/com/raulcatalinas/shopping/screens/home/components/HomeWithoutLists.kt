@@ -25,7 +25,12 @@ import com.raulcatalinas.shopping.shared.components.SectionHeader
 import com.raulcatalinas.shopping.shared.extensions.verticalScrollbar
 
 @Composable
-fun HomeWithoutLists(paddingValues: PaddingValues, scrollState: ScrollState) {
+fun HomeWithoutLists(
+    paddingValues: PaddingValues,
+    scrollState: ScrollState,
+    onCreateList: () -> Unit,
+    onJoinList: () -> Unit
+) {
     Column(
         modifier = Modifier
             .padding(paddingValues)
@@ -51,13 +56,13 @@ fun HomeWithoutLists(paddingValues: PaddingValues, scrollState: ScrollState) {
         )
 
         Button(
-            onClick = { println("Creating new list...") }
+            onClick = onCreateList
         ) {
             Text(stringResource(R.string.create_new_list_btn))
         }
 
         OutlinedButton(
-            onClick = { println("Joining a list...") }
+            onClick = onJoinList
         ) {
             Text(stringResource(R.string.join_a_list_btn))
         }

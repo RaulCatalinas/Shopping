@@ -26,7 +26,8 @@ import com.raulcatalinas.shopping.shared.types.ShoppingList
 @Composable
 fun HomeWithLists(
     paddingValues: PaddingValues,
-    shoppingLists: List<ShoppingList>
+    shoppingLists: List<ShoppingList>,
+    onListClick: (String) -> Unit
 ) {
     val listState = rememberLazyListState()
 
@@ -48,7 +49,7 @@ fun HomeWithLists(
         items(shoppingLists) {
             Card(
                 modifier = Modifier.fillMaxWidth(),
-                onClick = { println("Navigating to detail...") }
+                onClick = { onListClick(it.id) }
             ) {
                 Row(
                     modifier = Modifier

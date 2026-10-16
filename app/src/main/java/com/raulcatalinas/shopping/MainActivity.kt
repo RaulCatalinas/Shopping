@@ -28,20 +28,27 @@ import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.lifecycleScope
+import androidx.navigation.NavController
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.NavHostController
+import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
+import androidx.navigation.navArgument
 import com.raulcatalinas.shopping.backend.auth.viewmodels.AuthState
 import com.raulcatalinas.shopping.backend.auth.viewmodels.AuthViewModel
 import com.raulcatalinas.shopping.screens.auth.AuthScreen
 import com.raulcatalinas.shopping.screens.auth.ResetPasswordScreen
 import com.raulcatalinas.shopping.screens.home.HomeScreen
+import com.raulcatalinas.shopping.screens.lists.CreateListScreen
+import com.raulcatalinas.shopping.screens.lists.ListDetailsRoute
 import com.raulcatalinas.shopping.screens.profile.ProfileScreen
 import com.raulcatalinas.shopping.screens.settings.SettingsScreen
 import com.raulcatalinas.shopping.screens.settings.viewmodels.SettingsViewModel
+import com.raulcatalinas.shopping.shared.constants.CREATE_LIST_ROUTE
+import com.raulcatalinas.shopping.shared.constants.LIST_DETAIL_ROUTE
 import com.raulcatalinas.shopping.shared.utils.LocalSnackbarController
 import com.raulcatalinas.shopping.shared.utils.SnackbarController
 import com.raulcatalinas.shopping.ui.theme.ShoppingTheme
@@ -132,8 +139,9 @@ fun ShoppingApp(
     NavigationSuiteScaffold(
         navigationSuiteItems = {
             AppDestinations.entries.forEach { destination ->
-                val isSelected = currentRoute == destination.name ||
-                        (currentRoute == "AUTH" && destination == AppDestinations.HOME)
+                val isSelected =
+                    currentRoute == destination.name
+                            || currentRoute in destination.relatedRoutes
 
                 val isItemEnabled = destination.enabled || authState is AuthState.Authenticated
 
@@ -149,15 +157,7 @@ fun ShoppingApp(
                     label = { Text(stringResource(destination.labelRes)) },
                     selected = isSelected,
                     onClick = {
-                        if (
-                            currentRoute == destination.name
-                            || (
-                                    currentRoute == "AUTH"
-                                            && destination == AppDestinations.HOME
-                                    )
-                        ) {
-                            return@item
-                        }
+                        if (isSelected) return@item
 
                         if (
                             destination.requiresAuth
@@ -193,6 +193,20 @@ fun ShoppingApp(
         ) {
             composable("AUTH") { AuthScreen() }
 
+            composable(CREATE_LIST_ROUTE) {
+                CreateListScreen()
+            }
+
+            composable(
+                route = LIST_DETAIL_ROUTE,
+                arguments = listOf(navArgument("listId") { type = NavType.StringType })
+            ) { backStackEntry ->
+                val listId = backStackEntry.arguments?.getString("listId")
+                    ?: return@composable
+
+                ListDetailsRoute(listId = listId)
+            }
+
             AppDestinations.entries.forEach { destination ->
                 composable(destination.name) {
                     if (destination.requiresAuth && authState !is AuthState.Authenticated) {
@@ -205,7 +219,7 @@ fun ShoppingApp(
                         return@composable
                     }
 
-                    destination.content()
+                    destination.content(navController)
                 }
             }
         }
@@ -218,14 +232,26 @@ enum class AppDestinations(
     val iconSize: Int,
     val requiresAuth: Boolean,
     val enabled: Boolean = true,
-    val content: @Composable () -> Unit,
+    val relatedRoutes: Set<String> = emptySet(),
+    val content: @Composable (NavController) -> Unit,
 ) {
     HOME(
         labelRes = R.string.home_route,
         icon = Icons.Default.Home,
         iconSize = 24,
         requiresAuth = true,
-        content = { HomeScreen() }
+        relatedRoutes = setOf("AUTH", CREATE_LIST_ROUTE, LIST_DETAIL_ROUTE),
+        content = {
+            HomeScreen(
+                onCreateList = {
+                    it.navigate(CREATE_LIST_ROUTE) { launchSingleTop = true }
+                },
+                onJoinList = { println("Joining to list...") },
+                onListClick = { id ->
+                    it.navigate("LIST/$id") { launchSingleTop = true }
+                }
+            )
+        }
     ),
     PROFILE(
         labelRes = R.string.profile_route,

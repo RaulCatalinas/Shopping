@@ -5,6 +5,7 @@ import kotlinx.serialization.Serializable
 
 @Serializable
 data class ShoppingElement(
+    val id: String,
     val name: String,
     val quantity: Int,
     @SerialName("list_id")

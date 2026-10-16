@@ -82,4 +82,12 @@
     <string name="lists_load_error">No se pudieron cargar tus listas. Revisa tu conexión.</string>
     <string name="retry_btn">Reintentar</string>
     <string name="all_bought">Todo comprado</string>
+
+    <!-- CreateNewListScreen -->
+    <string name="create_list_input_placeholder">Nombre de la lista</string>
+    <string name="save_new_list_btn">Crear lista</string>
+
+    <!-- DetailListScreen -->
+    <string name="items_still_to_be_bought">Pendientes (%1$d)</string>
+    <string name="items_purchased">Comprados (%1$d)</string>
 </resources>

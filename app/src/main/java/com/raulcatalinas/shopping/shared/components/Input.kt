@@ -20,6 +20,8 @@ import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.text.input.KeyboardType
 
 @Composable
@@ -29,6 +31,7 @@ fun Input(
     isError: Boolean = false,
     isOutlined: Boolean = false,
     showCharacterCounter: Boolean = false,
+    autoFocus: Boolean = false,
     minimumCharacterCount: Int? = null,
     clearSignal: Int = 0,
     placeholder: String,
@@ -42,8 +45,13 @@ fun Input(
 ) {
     var inputContentLength by rememberSaveable { mutableIntStateOf(0) }
     var handledSignal by remember { mutableIntStateOf(clearSignal) }
+    val focusRequester = remember { FocusRequester() }
 
     val state = rememberTextFieldState()
+
+    if (autoFocus) {
+        LaunchedEffect(Unit) { focusRequester.requestFocus() }
+    }
 
     LaunchedEffect(clearSignal) {
         if (clearSignal != handledSignal) {
@@ -92,7 +100,10 @@ fun Input(
 
     if (isOutlined) {
         OutlinedTextField(
-            modifier = modifier.fillMaxWidth(),
+            modifier =
+                modifier
+                    .fillMaxWidth()
+                    .focusRequester(focusRequester),
             state = state,
             enabled = enabled,
             lineLimits = lineLimits,
@@ -107,7 +118,10 @@ fun Input(
     }
 
     TextField(
-        modifier = modifier.fillMaxWidth(),
+        modifier =
+            modifier
+                .fillMaxWidth()
+                .focusRequester(focusRequester),
         state = state,
         enabled = enabled,
         lineLimits = lineLimits,
