@@ -15,8 +15,9 @@ import com.raulcatalinas.shopping.backend.db.dto.EnsureProfileParams
 import com.raulcatalinas.shopping.backend.db.dto.ShoppingElementDto
 import com.raulcatalinas.shopping.backend.db.dto.ShoppingListDto
 import com.raulcatalinas.shopping.backend.profiles.dto.UserProfileDto
+import com.raulcatalinas.shopping.shared.types.NewShoppingElement
+import com.raulcatalinas.shopping.shared.types.NewShoppingList
 import com.raulcatalinas.shopping.shared.types.ShoppingElement
-import com.raulcatalinas.shopping.shared.types.ShoppingList
 import com.raulcatalinas.shopping.shared.types.UserProfile
 import io.github.jan.supabase.postgrest.Postgrest
 import io.github.jan.supabase.postgrest.rpc
@@ -42,7 +43,7 @@ class DbRepository @Inject constructor(
             .decodeSingleOrNull<ShoppingListDto>()
     }
 
-    suspend fun createList(list: ShoppingList): ShoppingListDto? {
+    suspend fun createList(list: NewShoppingList): ShoppingListDto? {
         return db.from(TABLE_SHOPPING_LISTS)
             .insert(list) {
                 select()
@@ -50,12 +51,20 @@ class DbRepository @Inject constructor(
             .decodeSingleOrNull<ShoppingListDto>()
     }
 
-    suspend fun createShoppingElement(
-        listId: String,
-        element: ShoppingElement
-    ): ShoppingElementDto? {
+    suspend fun deleteList(id: String): Boolean {
+        val deleted = db.from(TABLE_SHOPPING_LISTS)
+            .delete {
+                select()
+                filter { eq(IdColumn, id) }
+            }
+            .decodeList<ShoppingListDto>()
+
+        return deleted.isNotEmpty()
+    }
+
+    suspend fun createShoppingElement(element: NewShoppingElement): ShoppingElementDto? {
         return db.from(TABLE_SHOPPING_ELEMENTS)
-            .insert(element.copy(listId = listId)) {
+            .insert(element) {
                 select()
             }
             .decodeSingleOrNull<ShoppingElementDto>()

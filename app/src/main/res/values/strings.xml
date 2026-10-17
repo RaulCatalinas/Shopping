@@ -83,6 +83,14 @@
     <string name="lists_load_error">Couldn\'t load your lists. Check your connection.</string>
     <string name="retry_btn">Retry</string>
     <string name="all_bought">All bought</string>
+    <string name="create_lists_error">Couldn\'t save the list. Try again later.</string>
+    <string name="create_shopping_element_error">Couldn\'t save the item. Try again later.</string>
+    <string name="list_card_empty">No items</string>
+    <string name="delete_list">Delete list</string>
+    <string name="delete_list_confirm_dialog_body">Delete \"%1$s\"? This can\'t be undone.</string>
+    <string name="keep_list_btn">Keep list</string>
+    <string name="delete_list_error">Couldn\'t delete the list. Try again later.</string>
+
 
     <!-- CreateNewListScreen -->
     <string name="create_list_input_placeholder">List name</string>

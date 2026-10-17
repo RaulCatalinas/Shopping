@@ -1,12 +1,16 @@
 package com.raulcatalinas.shopping.core.lists.viewmodels
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.raulcatalinas.shopping.R
 import com.raulcatalinas.shopping.core.lists.repositories.ListsRepository
+import com.raulcatalinas.shopping.core.lists.viewmodels.constants.LISTS_VIEW_MODEL_TAG
 import com.raulcatalinas.shopping.core.mappers.toDomain
 import com.raulcatalinas.shopping.shared.types.ShoppingElement
 import com.raulcatalinas.shopping.shared.types.ShoppingList
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -41,10 +45,12 @@ class ListsViewModel @Inject constructor(
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow<ListsUiState>(ListsUiState.Loading)
-    val uiState: StateFlow<ListsUiState> = _uiState.asStateFlow()
-
     private val _detailState = MutableStateFlow<ListDetailUiState>(ListDetailUiState.Loading)
+    private val _isSaving = MutableStateFlow(false)
+
+    val isSaving: StateFlow<Boolean> = _isSaving.asStateFlow()
     val detailState: StateFlow<ListDetailUiState> = _detailState.asStateFlow()
+    val uiState: StateFlow<ListsUiState> = _uiState.asStateFlow()
 
     private var currentListId: String? = null
 
@@ -87,6 +93,85 @@ class ListsViewModel @Inject constructor(
             }
 
             _detailState.value = ListDetailUiState.Success(list.toDomain(), elements.toDomain())
+        }
+    }
+
+    fun createList(
+        listName: String,
+        onCreated: (ShoppingList) -> Unit,
+        onError: (errorRes: Int) -> Unit
+    ) {
+        _isSaving.value = true
+
+        viewModelScope.launch {
+            try {
+                val createdList = listsRepository.createList(listName.trim())
+
+                if (createdList == null) {
+                    onError(R.string.create_lists_error)
+
+                    return@launch
+                }
+
+                onCreated(createdList)
+            } catch (e: CancellationException) {
+                throw e
+            } catch (e: Exception) {
+                Log.e(LISTS_VIEW_MODEL_TAG, "Error creating list: ${e.message}", e)
+                onError(R.string.create_lists_error)
+            } finally {
+                _isSaving.value = false
+            }
+        }
+    }
+
+    fun createShoppingElement(
+        elementName: String,
+        quantity: Int,
+        listId: String,
+        onResult: (Int?) -> Unit
+    ) {
+        _isSaving.value = true
+
+        viewModelScope.launch {
+            try {
+                val createdElement = listsRepository.createShoppingElement(
+                    elementName = elementName,
+                    quantity = quantity,
+                    listId = listId
+                )
+
+                onResult(
+                    if (createdElement == null) R.string.create_shopping_element_error
+                    else null
+                )
+            } catch (e: CancellationException) {
+                throw e
+            } catch (e: Exception) {
+                Log.e(
+                    LISTS_VIEW_MODEL_TAG,
+                    "Error creating shopping element: ${e.message}",
+                    e
+                )
+
+                onResult(R.string.create_shopping_element_error)
+            } finally {
+                _isSaving.value = false
+            }
+        }
+    }
+
+    fun deleteList(listId: String, onError: (errorRes: Int) -> Unit) {
+        viewModelScope.launch {
+            listsRepository.deleteList(listId)
+                .onSuccess {
+                    val current = _uiState.value as? ListsUiState.Success ?: return@onSuccess
+
+                    _uiState.value = ListsUiState.Success(
+                        current.lists.filterNot { it.id == listId }
+                    )
+                }
+                .onFailure { onError(R.string.delete_list_error) }
         }
     }
 }

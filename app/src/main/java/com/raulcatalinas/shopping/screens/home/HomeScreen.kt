@@ -19,6 +19,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalResources
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
@@ -29,6 +30,7 @@ import com.raulcatalinas.shopping.core.lists.viewmodels.ListsViewModel
 import com.raulcatalinas.shopping.screens.home.components.HomeWithLists
 import com.raulcatalinas.shopping.screens.home.components.HomeWithoutLists
 import com.raulcatalinas.shopping.shared.components.AppScaffold
+import com.raulcatalinas.shopping.shared.utils.LocalSnackbarController
 
 @Composable
 fun HomeScreen(
@@ -40,6 +42,9 @@ fun HomeScreen(
     val state by listsViewModel.uiState.collectAsStateWithLifecycle()
 
     val scrollState = rememberScrollState()
+
+    val snackbar = LocalSnackbarController.current
+    val resources = LocalResources.current
 
     val showFloatingActionButton =
         (state as? ListsUiState.Success)
@@ -82,7 +87,12 @@ fun HomeScreen(
                     HomeWithLists(
                         paddingValues = paddingValues,
                         shoppingLists = current.lists,
-                        onListClick = onListClick
+                        onListClick = onListClick,
+                        onListDelete = { id ->
+                            listsViewModel.deleteList(id) { errorRes ->
+                                snackbar.show(resources.getString(errorRes))
+                            }
+                        }
                     )
                 }
             }

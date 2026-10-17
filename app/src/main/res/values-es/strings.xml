@@ -82,6 +82,13 @@
     <string name="lists_load_error">No se pudieron cargar tus listas. Revisa tu conexión.</string>
     <string name="retry_btn">Reintentar</string>
     <string name="all_bought">Todo comprado</string>
+    <string name="create_lists_error">No se pudo guardar la lista. Inténtalo más tarde.</string>
+    <string name="create_shopping_element_error">No se pudo guardar el producto. Inténtalo más tarde.</string>
+    <string name="list_card_empty">Sin productos</string>
+    <string name="delete_list">Eliminar lista</string>
+    <string name="delete_list_confirm_dialog_body">¿Eliminar \"%1$s\"? No se puede deshacer.</string>
+    <string name="keep_list_btn">Conservar lista</string>
+    <string name="delete_list_error">No se pudo eliminar la lista. Inténtalo más tarde.</string>
 
     <!-- CreateNewListScreen -->
     <string name="create_list_input_placeholder">Nombre de la lista</string>

@@ -194,7 +194,12 @@ fun ShoppingApp(
             composable("AUTH") { AuthScreen() }
 
             composable(CREATE_LIST_ROUTE) {
-                CreateListScreen()
+                CreateListScreen {
+                    navController.navigate("LIST/$it") {
+                        popUpTo(CREATE_LIST_ROUTE) { inclusive = true }
+                        launchSingleTop = true
+                    }
+                }
             }
 
             composable(
