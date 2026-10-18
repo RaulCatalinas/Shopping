@@ -1,7 +1,6 @@
 package com.raulcatalinas.shopping.core.lists.repositories
 
 import android.util.Log
-import com.raulcatalinas.shopping.backend.auth.repositories.AuthRepository
 import com.raulcatalinas.shopping.backend.db.DbRepository
 import com.raulcatalinas.shopping.backend.db.dto.ShoppingElementDto
 import com.raulcatalinas.shopping.backend.db.dto.ShoppingListDto
@@ -11,42 +10,31 @@ import com.raulcatalinas.shopping.shared.types.NewShoppingElement
 import com.raulcatalinas.shopping.shared.types.NewShoppingList
 import com.raulcatalinas.shopping.shared.types.ShoppingElement
 import com.raulcatalinas.shopping.shared.types.ShoppingList
-import java.util.concurrent.CancellationException
+import kotlinx.coroutines.CancellationException
 import javax.inject.Inject
 
 class ListsRepository @Inject constructor(
-    private val dbRepository: DbRepository,
-    private val authRepository: AuthRepository
+    private val dbRepository: DbRepository
 ) {
     suspend fun getAllList(): Result<List<ShoppingListDto>> {
-        try {
-            val lists = dbRepository.getAllList()
-
-            return Result.success(lists)
+        return try {
+            Result.success(dbRepository.getAllList())
+        } catch (e: CancellationException) {
+            throw e
         } catch (e: Exception) {
-            Log.e(
-                LISTS_REPOSITORY_TAG,
-                "Error getting user lists: ${e.message}",
-                e
-            )
-
-            return Result.failure(e)
+            Log.e(LISTS_REPOSITORY_TAG, "Error getting user lists: ${e.message}", e)
+            Result.failure(e)
         }
     }
 
     suspend fun getListById(id: String): Result<ShoppingListDto?> {
-        try {
-            val list = dbRepository.getListById(id)
-
-            return Result.success(list)
+        return try {
+            Result.success(dbRepository.getListById(id))
+        } catch (e: CancellationException) {
+            throw e
         } catch (e: Exception) {
-            Log.e(
-                LISTS_REPOSITORY_TAG,
-                "Error getting user list with id $id: ${e.message}",
-                e
-            )
-
-            return Result.failure(e)
+            Log.e(LISTS_REPOSITORY_TAG, "Error getting user list with id $id: ${e.message}", e)
+            Result.failure(e)
         }
     }
 
@@ -61,16 +49,9 @@ class ListsRepository @Inject constructor(
         }
     }
 
+    // Only the name is sent: the id and the owner (auth.uid()) are set by the database
     suspend fun createList(listName: String): ShoppingList? {
-        val currentUserId =
-            authRepository
-                .getCurrentUser()
-                ?.id
-                ?: throw IllegalStateException("User ID was not returned")
-
-        val list = NewShoppingList(listName)
-
-        val createdList = dbRepository.createList(list)
+        val createdList = dbRepository.createList(NewShoppingList(listName.trim()))
 
         return createdList?.toDomain()
     }
@@ -81,7 +62,7 @@ class ListsRepository @Inject constructor(
         listId: String
     ): ShoppingElement? {
         val shoppingElement = NewShoppingElement(
-            name = elementName,
+            name = elementName.trim(),
             quantity = quantity,
             listId = listId
         )
@@ -102,6 +83,21 @@ class ListsRepository @Inject constructor(
             throw e
         } catch (e: Exception) {
             Log.e(LISTS_REPOSITORY_TAG, "Error deleting list $id: ${e.message}", e)
+            Result.failure(e)
+        }
+    }
+
+    suspend fun deleteShoppingElement(id: String): Result<Unit> {
+        return try {
+            if (!dbRepository.deleteShoppingElement(id)) {
+                return Result.failure(IllegalStateException("The element was not deleted"))
+            }
+
+            Result.success(Unit)
+        } catch (e: CancellationException) {
+            throw e
+        } catch (e: Exception) {
+            Log.e(LISTS_REPOSITORY_TAG, "Error deleting element $id: ${e.message}", e)
             Result.failure(e)
         }
     }

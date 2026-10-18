@@ -209,7 +209,10 @@ fun ShoppingApp(
                 val listId = backStackEntry.arguments?.getString("listId")
                     ?: return@composable
 
-                ListDetailsRoute(listId = listId)
+                ListDetailsRoute(
+                    listId = listId,
+                    onBack = { navController.popBackStack() }
+                )
             }
 
             AppDestinations.entries.forEach { destination ->

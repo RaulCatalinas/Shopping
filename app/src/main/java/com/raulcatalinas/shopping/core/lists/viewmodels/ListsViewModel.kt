@@ -101,6 +101,9 @@ class ListsViewModel @Inject constructor(
         onCreated: (ShoppingList) -> Unit,
         onError: (errorRes: Int) -> Unit
     ) {
+        // Ignore a second tap while the first one is still saving
+        if (_isSaving.value) return
+
         _isSaving.value = true
 
         viewModelScope.launch {
@@ -131,6 +134,9 @@ class ListsViewModel @Inject constructor(
         listId: String,
         onResult: (Int?) -> Unit
     ) {
+        // Ignore a second tap while the first one is still saving
+        if (_isSaving.value) return
+
         _isSaving.value = true
 
         viewModelScope.launch {
@@ -172,6 +178,22 @@ class ListsViewModel @Inject constructor(
                     )
                 }
                 .onFailure { onError(R.string.delete_list_error) }
+        }
+    }
+
+    fun deleteShoppingElement(elementId: String, onError: (errorRes: Int) -> Unit) {
+        viewModelScope.launch {
+            listsRepository.deleteShoppingElement(elementId)
+                .onSuccess {
+                    val current =
+                        _detailState.value as? ListDetailUiState.Success
+                            ?: return@onSuccess
+
+                    _detailState.value = current.copy(
+                        elements = current.elements.filterNot { it.id == elementId }
+                    )
+                }
+                .onFailure { onError(R.string.delete_element_error) }
         }
     }
 }

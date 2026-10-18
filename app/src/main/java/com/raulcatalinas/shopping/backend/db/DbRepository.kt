@@ -178,4 +178,15 @@ class DbRepository @Inject constructor(
             Result.failure(e)
         }
     }
+
+    suspend fun deleteShoppingElement(id: String): Boolean {
+        val deleted = db.from(TABLE_SHOPPING_ELEMENTS)
+            .delete {
+                select()
+                filter { eq(IdColumn, id) }
+            }
+            .decodeList<ShoppingElementDto>()
+
+        return deleted.isNotEmpty()
+    }
 }

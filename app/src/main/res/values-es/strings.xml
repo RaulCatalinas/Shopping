@@ -97,4 +97,18 @@
     <!-- DetailListScreen -->
     <string name="items_still_to_be_bought">Pendientes (%1$d)</string>
     <string name="items_purchased">Comprados (%1$d)</string>
+    <string name="empty_list">Aún no hay productos</string>
+    <string name="add_item">Añadir artículo</string>
+    <string name="list_not_found">Esta lista ya no existe o no tienes acceso.</string>
+    <string name="list_load_error">No se pudo cargar la lista. Revisa tu conexión.</string>
+    <string name="back_btn">Volver</string>
+    <string name="add_item_title">Añadir producto</string>
+    <string name="item_name_placeholder">Nombre del producto</string>
+    <string name="quantity_label">Cantidad</string>
+    <string name="save_btn">Guardar</string>
+    <string name="decrease_quantity">Reducir cantidad</string>
+    <string name="increase_quantity">Aumentar cantidad</string>
+    <string name="keep_element_btn">Conservar elemento</string>
+    <string name="delete_element">Eliminar elemento</string>
+    <string name="delete_element_error">No se pudo eliminar el elemento. Inténtalo más tarde.</string>
 </resources>

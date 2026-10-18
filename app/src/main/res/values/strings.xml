@@ -91,12 +91,25 @@
     <string name="keep_list_btn">Keep list</string>
     <string name="delete_list_error">Couldn\'t delete the list. Try again later.</string>
 
-
     <!-- CreateNewListScreen -->
     <string name="create_list_input_placeholder">List name</string>
     <string name="save_new_list_btn">Create list</string>
 
     <!-- DetailListScreen -->
-    <string name="items_still_to_be_bought">Items still to be bought (%1$d)</string>
-    <string name="items_purchased">Items purchased (%1$d)</string>
+    <string name="items_still_to_be_bought">To buy (%1$d)</string>
+    <string name="items_purchased">Bought (%1$d)</string>
+    <string name="empty_list">No items yet</string>
+    <string name="add_item">Add item</string>
+    <string name="list_not_found">This list doesn\'t exist or you no longer have access.</string>
+    <string name="list_load_error">Couldn\'t load the list. Check your connection.</string>
+    <string name="back_btn">Go back</string>
+    <string name="add_item_title">Add item</string>
+    <string name="item_name_placeholder">Item name</string>
+    <string name="quantity_label">Quantity</string>
+    <string name="save_btn">Save</string>
+    <string name="decrease_quantity">Decrease quantity</string>
+    <string name="increase_quantity">Increase quantity</string>
+    <string name="keep_element_btn">Keep item</string>
+    <string name="delete_element">Delete item</string>
+    <string name="delete_element_error">Couldn\'t delete the item. Try again later.</string>
 </resources>
