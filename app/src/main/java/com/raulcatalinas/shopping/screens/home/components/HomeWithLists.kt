@@ -66,12 +66,14 @@ fun HomeWithLists(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.spacedBy(16.dp),
     ) {
-        // The key ties each card's state (menu, dialog, sheet) to its list, not to
-        // its position, so it stays correct when another list is deleted
         items(shoppingLists, key = { it.id }) { list ->
             val subtitle = when {
                 list.totalCount == 0 -> stringResource(R.string.list_card_empty)
                 list.pendingCount == 0 -> stringResource(R.string.all_bought)
+                list.pendingCount == list.totalCount -> stringResource(
+                    R.string.list_card_none_bought
+                )
+
                 else -> stringResource(
                     R.string.shopping_elements_remaining,
                     list.pendingCount,
@@ -79,8 +81,6 @@ fun HomeWithLists(
                 )
             }
 
-            // A long press opens a menu. "Delete" opens the confirmation dialog and
-            // "Rename" opens the sheet; both manage their own state through `trigger`.
             ConfirmDialog(
                 title = stringResource(R.string.delete_list),
                 content = stringResource(
