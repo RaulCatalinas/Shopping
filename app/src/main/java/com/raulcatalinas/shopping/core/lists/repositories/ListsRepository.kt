@@ -124,4 +124,19 @@ class ListsRepository @Inject constructor(
 
         return updated?.toDomain()
     }
+
+    suspend fun setElementChecked(id: String, checked: Boolean): Result<Unit> {
+        return try {
+            if (!dbRepository.setElementChecked(id, checked)) {
+                return Result.failure(IllegalStateException("The element was not updated"))
+            }
+
+            Result.success(Unit)
+        } catch (e: CancellationException) {
+            throw e
+        } catch (e: Exception) {
+            Log.e(LISTS_REPOSITORY_TAG, "Error updating element $id: ${e.message}", e)
+            Result.failure(e)
+        }
+    }
 }

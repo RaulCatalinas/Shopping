@@ -17,6 +17,7 @@ import com.raulcatalinas.shopping.backend.db.dto.ShoppingListDto
 import com.raulcatalinas.shopping.backend.profiles.dto.UserProfileDto
 import com.raulcatalinas.shopping.shared.types.NewShoppingElement
 import com.raulcatalinas.shopping.shared.types.NewShoppingList
+import com.raulcatalinas.shopping.shared.types.UpdateElementChecked
 import com.raulcatalinas.shopping.shared.types.UpdateShoppingElement
 import com.raulcatalinas.shopping.shared.types.UpdateShoppingList
 import com.raulcatalinas.shopping.shared.types.UserProfile
@@ -192,5 +193,16 @@ class DbRepository @Inject constructor(
             .decodeList<ShoppingElementDto>()
 
         return deleted.isNotEmpty()
+    }
+
+    suspend fun setElementChecked(elementId: String, checked: Boolean): Boolean {
+        val updated = db.from(TABLE_SHOPPING_ELEMENTS)
+            .update(UpdateElementChecked(checked)) {
+                select()
+                filter { eq(IdColumn, elementId) }
+            }
+            .decodeList<ShoppingElementDto>()
+
+        return updated.isNotEmpty()
     }
 }

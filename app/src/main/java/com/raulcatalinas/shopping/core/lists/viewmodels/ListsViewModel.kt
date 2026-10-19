@@ -279,4 +279,41 @@ class ListsViewModel @Inject constructor(
             }
         }
     }
+
+    fun setElementChecked(
+        elementId: String,
+        checked: Boolean,
+        onError: (errorRes: Int) -> Unit
+    ) {
+        val current = _detailState.value as? ListDetailUiState.Success ?: return
+        val previous = current.elements.firstOrNull { it.id == elementId } ?: return
+
+        if (previous.isChecked == checked) return
+
+        updateElementInState(elementId) { it.copy(isChecked = checked) }
+
+        viewModelScope.launch {
+            listsRepository.setElementChecked(elementId, checked)
+                .onFailure {
+                    updateElementInState(elementId) {
+                        it.copy(isChecked = previous.isChecked)
+                    }
+                    onError(R.string.update_shopping_element_error)
+                }
+        }
+    }
+
+    private fun updateElementInState(
+        elementId: String,
+        change: (ShoppingElement) -> ShoppingElement
+    ) {
+        val current = _detailState.value as? ListDetailUiState.Success ?: return
+
+        _detailState.value = current.copy(
+            elements = current.elements.map {
+                if (it.id == elementId) change(it)
+                else it
+            }
+        )
+    }
 }

@@ -105,8 +105,9 @@ fun ListDetailsRoute(
             elements = current.elements,
             isSaving = isSaving,
             onToggleElement = { elementId, checked ->
-                // TODO: optimistic update in the ViewModel, then save
-                println("Toggle element $elementId -> $checked")
+                listsViewModel.setElementChecked(elementId, checked) { errorRes ->
+                    snackbar.show(resources.getString(errorRes))
+                }
             },
             onAddItem = { name, quantity, onSaved ->
                 listsViewModel.createShoppingElement(
@@ -323,7 +324,7 @@ private fun ElementRow(
                                 horizontalArrangement = Arrangement.spacedBy(8.dp)
                             ) {
                                 AppCheckbox(
-                                    initialValue = element.isChecked,
+                                    checked = element.isChecked,
                                     text = element.name,
                                     textDecoration =
                                         if (element.isChecked) TextDecoration.LineThrough
