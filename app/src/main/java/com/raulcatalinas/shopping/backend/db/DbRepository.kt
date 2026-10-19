@@ -17,7 +17,8 @@ import com.raulcatalinas.shopping.backend.db.dto.ShoppingListDto
 import com.raulcatalinas.shopping.backend.profiles.dto.UserProfileDto
 import com.raulcatalinas.shopping.shared.types.NewShoppingElement
 import com.raulcatalinas.shopping.shared.types.NewShoppingList
-import com.raulcatalinas.shopping.shared.types.ShoppingElement
+import com.raulcatalinas.shopping.shared.types.UpdateShoppingElement
+import com.raulcatalinas.shopping.shared.types.UpdateShoppingList
 import com.raulcatalinas.shopping.shared.types.UserProfile
 import io.github.jan.supabase.postgrest.Postgrest
 import io.github.jan.supabase.postgrest.rpc
@@ -62,6 +63,15 @@ class DbRepository @Inject constructor(
         return deleted.isNotEmpty()
     }
 
+    suspend fun updateList(id: String, changes: UpdateShoppingList): ShoppingListDto? {
+        return db.from(TABLE_SHOPPING_LISTS)
+            .update(changes) {
+                select()
+                filter { eq(IdColumn, id) }
+            }
+            .decodeSingleOrNull<ShoppingListDto>()
+    }
+
     suspend fun createShoppingElement(element: NewShoppingElement): ShoppingElementDto? {
         return db.from(TABLE_SHOPPING_ELEMENTS)
             .insert(element) {
@@ -83,17 +93,13 @@ class DbRepository @Inject constructor(
     }
 
     suspend fun updateShoppingElement(
-        listId: String,
         elementId: String,
-        updatedElement: ShoppingElement
+        changes: UpdateShoppingElement
     ): ShoppingElementDto? {
         return db.from(TABLE_SHOPPING_ELEMENTS)
-            .update(updatedElement) {
-                filter {
-                    eq(IdColumn, elementId)
-                    eq(ListIdColumn, listId)
-                }
+            .update(changes) {
                 select()
+                filter { eq(IdColumn, elementId) }
             }
             .decodeSingleOrNull<ShoppingElementDto>()
     }
@@ -161,8 +167,6 @@ class DbRepository @Inject constructor(
         }
     }
 
-    // DbRepository.kt
-// Creates the profile if it does not exist. Returns failure if the call itself failed.
     suspend fun ensureUserProfile(username: String): Result<Unit> {
         return try {
             db.rpc(

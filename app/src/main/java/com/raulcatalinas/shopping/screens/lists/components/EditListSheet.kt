@@ -7,10 +7,8 @@ import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
@@ -18,40 +16,38 @@ import androidx.compose.ui.unit.dp
 import com.raulcatalinas.shopping.R
 import com.raulcatalinas.shopping.shared.components.AppBottomSheet
 import com.raulcatalinas.shopping.shared.components.Input
-import com.raulcatalinas.shopping.shared.components.QuantityStepper
 
 @Composable
-fun AddItemSheet(
-    trigger: @Composable (open: () -> Unit) -> Unit,
+fun EditListSheet(
+    currentName: String,
     isSaving: Boolean,
-    onSave: (name: String, quantity: Int, onSaved: () -> Unit) -> Unit
+    trigger: @Composable (open: () -> Unit) -> Unit,
+    onSave: (name: String, onSaved: () -> Unit) -> Unit
 ) {
     AppBottomSheet(
         trigger = trigger,
-        title = stringResource(R.string.add_item_title)
+        title = stringResource(R.string.rename_list_title)
     ) { dismiss ->
-        var name by remember { mutableStateOf("") }
-        var quantity by rememberSaveable { mutableIntStateOf(1) }
+        var name by remember { mutableStateOf(currentName) }
+        var minimumCharsReached by remember { mutableStateOf(false) }
 
         Input(
             autoFocus = true,
             enabled = !isSaving,
-            placeholder = stringResource(R.string.item_name_placeholder)
+            initialValue = currentName,
+            showCharacterCounter = true,
+            minimumCharacterCount = 3,
+            placeholder = stringResource(R.string.create_list_input_placeholder),
+            onTooShort = { minimumCharsReached = false },
+            onMinimumReached = { minimumCharsReached = true }
         ) {
             name = it
         }
 
-        QuantityStepper(
-            label = stringResource(R.string.quantity_label),
-            quantity = quantity,
-            enabled = !isSaving,
-            onChange = { quantity = it }
-        )
-
         Button(
             modifier = Modifier.fillMaxWidth(),
-            enabled = name.isNotEmpty() && !isSaving,
-            onClick = { onSave(name, quantity, dismiss) }
+            enabled = minimumCharsReached && name != currentName && !isSaving,
+            onClick = { onSave(name, dismiss) }
         ) {
             if (isSaving) {
                 CircularProgressIndicator(

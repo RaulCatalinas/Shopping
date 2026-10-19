@@ -10,6 +10,8 @@ import com.raulcatalinas.shopping.shared.types.NewShoppingElement
 import com.raulcatalinas.shopping.shared.types.NewShoppingList
 import com.raulcatalinas.shopping.shared.types.ShoppingElement
 import com.raulcatalinas.shopping.shared.types.ShoppingList
+import com.raulcatalinas.shopping.shared.types.UpdateShoppingElement
+import com.raulcatalinas.shopping.shared.types.UpdateShoppingList
 import kotlinx.coroutines.CancellationException
 import javax.inject.Inject
 
@@ -49,9 +51,11 @@ class ListsRepository @Inject constructor(
         }
     }
 
-    // Only the name is sent: the id and the owner (auth.uid()) are set by the database
     suspend fun createList(listName: String): ShoppingList? {
-        val createdList = dbRepository.createList(NewShoppingList(listName.trim()))
+        val createdList =
+            dbRepository.createList(
+                NewShoppingList(listName.trim())
+            )
 
         return createdList?.toDomain()
     }
@@ -87,6 +91,12 @@ class ListsRepository @Inject constructor(
         }
     }
 
+    suspend fun updateList(id: String, name: String): ShoppingList? {
+        return dbRepository
+            .updateList(id, UpdateShoppingList(name.trim()))
+            ?.toDomain()
+    }
+
     suspend fun deleteShoppingElement(id: String): Result<Unit> {
         return try {
             if (!dbRepository.deleteShoppingElement(id)) {
@@ -100,5 +110,18 @@ class ListsRepository @Inject constructor(
             Log.e(LISTS_REPOSITORY_TAG, "Error deleting element $id: ${e.message}", e)
             Result.failure(e)
         }
+    }
+
+    suspend fun updateShoppingElement(
+        elementId: String,
+        elementName: String,
+        quantity: Int
+    ): ShoppingElement? {
+        val updated = dbRepository.updateShoppingElement(
+            elementId = elementId,
+            changes = UpdateShoppingElement(name = elementName.trim(), quantity = quantity)
+        )
+
+        return updated?.toDomain()
     }
 }

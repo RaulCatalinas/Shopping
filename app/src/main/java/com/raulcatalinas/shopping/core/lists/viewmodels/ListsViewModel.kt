@@ -181,6 +181,47 @@ class ListsViewModel @Inject constructor(
         }
     }
 
+    fun updateListName(
+        listId: String,
+        name: String,
+        onResult: (errorRes: Int?) -> Unit
+    ) {
+        _isSaving.value = true
+
+        viewModelScope.launch {
+            try {
+                val updated = listsRepository.updateList(listId, name)
+
+                if (updated == null) {
+                    onResult(R.string.update_list_error)
+
+                    return@launch
+                }
+
+                (_uiState.value as? ListsUiState.Success)?.let { current ->
+                    _uiState.value = ListsUiState.Success(
+                        current.lists.map { if (it.id == listId) updated else it }
+                    )
+                }
+
+                (_detailState.value as? ListDetailUiState.Success)?.let { current ->
+                    if (current.list.id == listId) {
+                        _detailState.value = current.copy(list = updated)
+                    }
+                }
+
+                onResult(null)
+            } catch (e: CancellationException) {
+                throw e
+            } catch (e: Exception) {
+                Log.e(LISTS_VIEW_MODEL_TAG, "Error renaming list: ${e.message}", e)
+                onResult(R.string.update_list_error)
+            } finally {
+                _isSaving.value = false
+            }
+        }
+    }
+
     fun deleteShoppingElement(elementId: String, onError: (errorRes: Int) -> Unit) {
         viewModelScope.launch {
             listsRepository.deleteShoppingElement(elementId)
@@ -194,6 +235,48 @@ class ListsViewModel @Inject constructor(
                     )
                 }
                 .onFailure { onError(R.string.delete_element_error) }
+        }
+    }
+
+    fun updateShoppingElement(
+        elementId: String,
+        elementName: String,
+        quantity: Int,
+        onResult: (Int?) -> Unit
+    ) {
+        _isSaving.value = true
+
+        viewModelScope.launch {
+            try {
+                val updated =
+                    listsRepository.updateShoppingElement(elementId, elementName, quantity)
+
+                if (updated == null) {
+                    onResult(R.string.update_shopping_element_error)
+
+                    return@launch
+                }
+
+                val current = _detailState.value as? ListDetailUiState.Success
+
+                if (current != null) {
+                    _detailState.value = current.copy(
+                        elements = current.elements.map {
+                            if (it.id == updated.id) updated
+                            else it
+                        }
+                    )
+                }
+
+                onResult(null)
+            } catch (e: CancellationException) {
+                throw e
+            } catch (e: Exception) {
+                Log.e(LISTS_VIEW_MODEL_TAG, "Error updating shopping element: ${e.message}", e)
+                onResult(R.string.update_shopping_element_error)
+            } finally {
+                _isSaving.value = false
+            }
         }
     }
 }

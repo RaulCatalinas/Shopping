@@ -41,13 +41,14 @@ fun Input(
     onTooShort: (() -> Unit)? = null,
     onMinimumReached: (() -> Unit)? = null,
     keyboardType: KeyboardType = KeyboardType.Text,
+    initialValue: String = "",
     onTyping: (String) -> Unit,
 ) {
     var inputContentLength by rememberSaveable { mutableIntStateOf(0) }
     var handledSignal by remember { mutableIntStateOf(clearSignal) }
     val focusRequester = remember { FocusRequester() }
 
-    val state = rememberTextFieldState()
+    val state = rememberTextFieldState(initialValue)
 
     if (autoFocus) {
         LaunchedEffect(Unit) { focusRequester.requestFocus() }

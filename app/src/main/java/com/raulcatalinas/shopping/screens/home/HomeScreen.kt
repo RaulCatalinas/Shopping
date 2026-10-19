@@ -34,12 +34,13 @@ import com.raulcatalinas.shopping.shared.utils.LocalSnackbarController
 
 @Composable
 fun HomeScreen(
-    listsViewModel: ListsViewModel = hiltViewModel(),
     onCreateList: () -> Unit,
     onJoinList: () -> Unit,
     onListClick: (String) -> Unit,
+    listsViewModel: ListsViewModel = hiltViewModel(),
 ) {
     val state by listsViewModel.uiState.collectAsStateWithLifecycle()
+    val isSaving by listsViewModel.isSaving.collectAsStateWithLifecycle()
 
     val scrollState = rememberScrollState()
 
@@ -87,10 +88,22 @@ fun HomeScreen(
                     HomeWithLists(
                         paddingValues = paddingValues,
                         shoppingLists = current.lists,
+                        isSaving = isSaving,
                         onListClick = onListClick,
                         onListDelete = { id ->
                             listsViewModel.deleteList(id) { errorRes ->
                                 snackbar.show(resources.getString(errorRes))
+                            }
+                        },
+                        onListRename = { listId, name, onSaved ->
+                            listsViewModel.updateListName(listId, name) { errorRes ->
+                                if (errorRes != null) {
+                                    snackbar.show(resources.getString(errorRes))
+
+                                    return@updateListName
+                                }
+
+                                onSaved()
                             }
                         }
                     )

@@ -25,7 +25,9 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.hapticfeedback.HapticFeedback
@@ -41,11 +43,12 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.raulcatalinas.shopping.R
 import com.raulcatalinas.shopping.core.lists.viewmodels.ListDetailUiState
 import com.raulcatalinas.shopping.core.lists.viewmodels.ListsViewModel
-import com.raulcatalinas.shopping.screens.lists.components.AddItemSheet
+import com.raulcatalinas.shopping.screens.lists.components.ItemFormSheet
 import com.raulcatalinas.shopping.shared.components.AppCheckbox
 import com.raulcatalinas.shopping.shared.components.AppScaffold
 import com.raulcatalinas.shopping.shared.components.Budget
 import com.raulcatalinas.shopping.shared.components.ConfirmDialog
+import com.raulcatalinas.shopping.shared.components.EditDeleteMenu
 import com.raulcatalinas.shopping.shared.components.StateMessage
 import com.raulcatalinas.shopping.shared.components.StickySectionHeader
 import com.raulcatalinas.shopping.shared.extensions.verticalScrollbar
@@ -121,6 +124,22 @@ fun ListDetailsRoute(
                     onSaved()
                 }
             },
+            onEditItem = { elementId, name, quantity, onSaved ->
+                listsViewModel.updateShoppingElement(
+                    elementId = elementId,
+                    elementName = name,
+                    quantity = quantity
+                ) { errorRes ->
+                    // On failure the sheet stays open with what the user typed
+                    if (errorRes != null) {
+                        snackbar.show(resources.getString(errorRes))
+
+                        return@updateShoppingElement
+                    }
+
+                    onSaved()
+                }
+            },
             onDeleteItem = { elementId ->
                 listsViewModel.deleteShoppingElement(elementId) { errorRes ->
                     snackbar.show(resources.getString(errorRes))
@@ -137,6 +156,7 @@ private fun ListDetailsScreen(
     isSaving: Boolean,
     onToggleElement: (elementId: String, checked: Boolean) -> Unit,
     onAddItem: (name: String, quantity: Int, onSaved: () -> Unit) -> Unit,
+    onEditItem: (elementId: String, name: String, quantity: Int, onSaved: () -> Unit) -> Unit,
     onDeleteItem: (String) -> Unit
 ) {
     val listState = rememberLazyListState()
@@ -159,7 +179,8 @@ private fun ListDetailsScreen(
             verticalArrangement = Arrangement.spacedBy(16.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            AddItemSheet(
+            ItemFormSheet(
+                title = stringResource(R.string.add_item_title),
                 isSaving = isSaving,
                 onSave = onAddItem,
                 trigger = { open ->
@@ -186,10 +207,8 @@ private fun ListDetailsScreen(
                     Modifier
                         .fillMaxWidth()
                         .verticalScrollbar(listState),
-                contentPadding = PaddingValues(
-                    horizontal = 20.dp,
-                    vertical = 16.dp
-                ),
+                // Horizontal padding is already applied by the parent Column
+                contentPadding = PaddingValues(vertical = 16.dp),
                 verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {
                 item {
@@ -226,8 +245,10 @@ private fun ListDetailsScreen(
                 items(pendingElements, key = { it.id }) { element ->
                     ElementRow(
                         element = element,
-                        onToggle = { onToggleElement(element.id, it) },
+                        isSaving = isSaving,
                         haptic = haptic,
+                        onToggle = { onToggleElement(element.id, it) },
+                        onEditItem = onEditItem,
                         onDeleteItem = onDeleteItem
                     )
                 }
@@ -244,8 +265,10 @@ private fun ListDetailsScreen(
                 items(boughtElements, key = { it.id }) { element ->
                     ElementRow(
                         element = element,
-                        onToggle = { onToggleElement(element.id, it) },
+                        isSaving = isSaving,
                         haptic = haptic,
+                        onToggle = { onToggleElement(element.id, it) },
+                        onEditItem = onEditItem,
                         onDeleteItem = onDeleteItem
                     )
                 }
@@ -254,11 +277,15 @@ private fun ListDetailsScreen(
     }
 }
 
+// A long press opens a small menu with "Edit" and "Delete". Each action opens its own
+// sheet or dialog, which manage their own state through their `trigger`.
 @Composable
 private fun ElementRow(
     element: ShoppingElement,
+    isSaving: Boolean,
     haptic: HapticFeedback,
     onToggle: (Boolean) -> Unit,
+    onEditItem: (elementId: String, name: String, quantity: Int, onSaved: () -> Unit) -> Unit,
     onDeleteItem: (String) -> Unit
 ) {
     ConfirmDialog(
@@ -271,33 +298,60 @@ private fun ElementRow(
         confirmText = stringResource(R.string.delete_btn),
         dismissText = stringResource(R.string.keep_element_btn),
         isDestructiveAction = true,
-        trigger = { open ->
-            Column {
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(8.dp)
-                ) {
-                    AppCheckbox(
-                        initialValue = element.isChecked,
-                        text = element.name,
-                        textDecoration =
-                            if (element.isChecked) TextDecoration.LineThrough
-                            else null,
-                        modifier = Modifier.weight(1f),
-                        onLongClick = {
-                            haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-                            open()
+        trigger = { openDelete ->
+            ItemFormSheet(
+                title = stringResource(R.string.edit_item_title),
+                isSaving = isSaving,
+                initialName = element.name,
+                initialQuantity = element.quantity,
+                onSave = { name, quantity, onSaved ->
+                    onEditItem(
+                        element.id,
+                        name,
+                        quantity,
+                        onSaved
+                    )
+                },
+                trigger = { openEdit ->
+                    var menuExpanded by remember { mutableStateOf(false) }
+
+                    Box(modifier = Modifier.fillMaxWidth()) {
+                        Column {
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.spacedBy(8.dp)
+                            ) {
+                                AppCheckbox(
+                                    initialValue = element.isChecked,
+                                    text = element.name,
+                                    textDecoration =
+                                        if (element.isChecked) TextDecoration.LineThrough
+                                        else null,
+                                    modifier = Modifier.weight(1f),
+                                    onLongClick = {
+                                        haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                                        menuExpanded = true
+                                    }
+                                ) {
+                                    onToggle(it)
+                                }
+
+                                if (element.quantity >= 2) Budget("x${element.quantity}")
+                            }
+
+                            HorizontalDivider()
                         }
-                    ) {
-                        onToggle(it)
+
+                        EditDeleteMenu(
+                            expanded = menuExpanded,
+                            onDismiss = { menuExpanded = false },
+                            onEdit = openEdit,
+                            onDelete = openDelete
+                        )
                     }
-
-                    if (element.quantity >= 2) Budget("x${element.quantity}")
                 }
-
-                HorizontalDivider()
-            }
+            )
         }
     )
 }

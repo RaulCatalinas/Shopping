@@ -90,6 +90,10 @@
     <string name="delete_list_confirm_dialog_body">Delete \"%1$s\"? This can\'t be undone.</string>
     <string name="keep_list_btn">Keep list</string>
     <string name="delete_list_error">Couldn\'t delete the list. Try again later.</string>
+    <string name="rename_list_title">Rename list</string>
+    <string name="rename_btn">Rename</string>
+    <string name="more_options">More options</string>
+    <string name="update_list_error">Couldn\'t rename the list. Try again later.</string>
 
     <!-- CreateNewListScreen -->
     <string name="create_list_input_placeholder">List name</string>
@@ -112,4 +116,7 @@
     <string name="keep_element_btn">Keep item</string>
     <string name="delete_element">Delete item</string>
     <string name="delete_element_error">Couldn\'t delete the item. Try again later.</string>
+    <string name="edit_item_title">Edit item</string>
+    <string name="edit_btn">Edit</string>
+    <string name="update_shopping_element_error">Couldn\'t save the changes. Try again later.</string>
 </resources>
