@@ -5,6 +5,8 @@ import com.raulcatalinas.shopping.backend.db.DbRepository
 import com.raulcatalinas.shopping.backend.db.dto.ShoppingElementDto
 import com.raulcatalinas.shopping.backend.db.dto.ShoppingListDto
 import com.raulcatalinas.shopping.core.lists.repositories.constants.LISTS_REPOSITORY_TAG
+import com.raulcatalinas.shopping.core.lists.types.ElementChange
+import com.raulcatalinas.shopping.core.lists.types.ListChange
 import com.raulcatalinas.shopping.core.mappers.toDomain
 import com.raulcatalinas.shopping.shared.types.NewShoppingElement
 import com.raulcatalinas.shopping.shared.types.NewShoppingList
@@ -13,6 +15,8 @@ import com.raulcatalinas.shopping.shared.types.ShoppingList
 import com.raulcatalinas.shopping.shared.types.UpdateShoppingElement
 import com.raulcatalinas.shopping.shared.types.UpdateShoppingList
 import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.catch
 import javax.inject.Inject
 
 class ListsRepository @Inject constructor(
@@ -138,5 +142,32 @@ class ListsRepository @Inject constructor(
             Log.e(LISTS_REPOSITORY_TAG, "Error updating element $id: ${e.message}", e)
             Result.failure(e)
         }
+    }
+
+    fun observeElementChanges(listId: String): Flow<ElementChange> {
+        return dbRepository
+            .observeElementChanges(listId)
+            .catch { e ->
+                if (e is CancellationException) throw e
+
+                Log.e(
+                    LISTS_REPOSITORY_TAG,
+                    "Realtime error on list $listId: ${e.message}",
+                    e
+                )
+            }
+    }
+
+    fun observeListChanges(): Flow<ListChange> {
+        return dbRepository.observeListChanges()
+            .catch { e ->
+                if (e is CancellationException) throw e
+
+                Log.e(
+                    LISTS_REPOSITORY_TAG,
+                    "Realtime error on lists: ${e.message}",
+                    e
+                )
+            }
     }
 }

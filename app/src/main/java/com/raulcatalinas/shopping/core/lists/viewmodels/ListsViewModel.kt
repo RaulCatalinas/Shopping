@@ -5,12 +5,15 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.raulcatalinas.shopping.R
 import com.raulcatalinas.shopping.core.lists.repositories.ListsRepository
+import com.raulcatalinas.shopping.core.lists.types.ElementChange
+import com.raulcatalinas.shopping.core.lists.types.ListChange
 import com.raulcatalinas.shopping.core.lists.viewmodels.constants.LISTS_VIEW_MODEL_TAG
 import com.raulcatalinas.shopping.core.mappers.toDomain
 import com.raulcatalinas.shopping.shared.types.ShoppingElement
 import com.raulcatalinas.shopping.shared.types.ShoppingList
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -47,6 +50,8 @@ class ListsViewModel @Inject constructor(
     private val _uiState = MutableStateFlow<ListsUiState>(ListsUiState.Loading)
     private val _detailState = MutableStateFlow<ListDetailUiState>(ListDetailUiState.Loading)
     private val _isSaving = MutableStateFlow(false)
+    private var _elementsJob: Job? = null
+    private var _listsJob: Job? = null
 
     val isSaving: StateFlow<Boolean> = _isSaving.asStateFlow()
     val detailState: StateFlow<ListDetailUiState> = _detailState.asStateFlow()
@@ -315,5 +320,85 @@ class ListsViewModel @Inject constructor(
                 else it
             }
         )
+    }
+
+    fun startObservingElements(listId: String) {
+        _elementsJob?.cancel()
+
+        _elementsJob = viewModelScope.launch {
+            listsRepository.observeElementChanges(listId).collect { change ->
+                if (change is ElementChange.Connected) loadListById(listId)
+                else applyElementChange(change)
+            }
+        }
+    }
+
+    fun stopObservingElements() {
+        _elementsJob?.cancel()
+        _elementsJob = null
+    }
+
+    private fun applyElementChange(change: ElementChange) {
+        val current = _detailState.value as? ListDetailUiState.Success ?: return
+
+        val elements = when (change) {
+            is ElementChange.Connected -> return
+            is ElementChange.Deleted -> current.elements.filterNot { it.id == change.id }
+
+            is ElementChange.Upsert -> {
+                val element = change.element.toDomain()
+
+                if (current.elements.any { it.id == element.id }) {
+                    current.elements.map {
+                        if (it.id == element.id) element
+                        else it
+                    }
+                } else {
+                    current.elements + element
+                }
+            }
+        }
+
+        _detailState.value = current.copy(elements = elements)
+    }
+
+    fun startObservingLists() {
+        _listsJob?.cancel()
+
+        _listsJob = viewModelScope.launch {
+            listsRepository.observeListChanges().collect { change ->
+                if (change is ListChange.Connected) loadLists()
+                else applyListChange(change)
+            }
+        }
+    }
+
+    fun stopObservingLists() {
+        _listsJob?.cancel()
+        _listsJob = null
+    }
+
+    private fun applyListChange(change: ListChange) {
+        val current = _uiState.value as? ListsUiState.Success ?: return
+
+        val lists = when (change) {
+            ListChange.Connected -> return
+            is ListChange.Deleted -> current.lists.filterNot { it.id == change.id }
+
+            is ListChange.Upsert -> {
+                val list = change.list.toDomain()
+
+                if (current.lists.any { it.id == list.id }) {
+                    current.lists.map {
+                        if (it.id == list.id) list
+                        else it
+                    }
+                } else {
+                    current.lists + list
+                }
+            }
+        }
+
+        _uiState.value = ListsUiState.Success(lists)
     }
 }

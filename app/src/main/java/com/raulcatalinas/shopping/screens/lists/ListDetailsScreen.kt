@@ -23,7 +23,6 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -39,6 +38,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
+import androidx.lifecycle.compose.LifecycleStartEffect
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.raulcatalinas.shopping.R
 import com.raulcatalinas.shopping.core.lists.viewmodels.ListDetailUiState
@@ -68,7 +68,12 @@ fun ListDetailsRoute(
     val snackbar = LocalSnackbarController.current
     val resources = LocalResources.current
 
-    LaunchedEffect(listId) { listsViewModel.loadListById(listId) }
+    LifecycleStartEffect(listId) {
+        listsViewModel.loadListById(listId)
+        listsViewModel.startObservingElements(listId)
+
+        onStopOrDispose { listsViewModel.stopObservingElements() }
+    }
 
     when (val current = state) {
         ListDetailUiState.Loading -> AppScaffold { paddingValues ->

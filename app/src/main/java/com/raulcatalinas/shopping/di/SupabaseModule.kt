@@ -12,6 +12,8 @@ import io.github.jan.supabase.auth.auth
 import io.github.jan.supabase.createSupabaseClient
 import io.github.jan.supabase.postgrest.Postgrest
 import io.github.jan.supabase.postgrest.postgrest
+import io.github.jan.supabase.realtime.Realtime
+import io.github.jan.supabase.realtime.realtime
 import javax.inject.Singleton
 
 @InstallIn(SingletonComponent::class)
@@ -25,6 +27,7 @@ object SupabaseModule {
             supabaseKey = BuildConfig.SUPABASE_PUBLISHABLE_KEY
         ) {
             install(Postgrest)
+            install(Realtime)
             install(Auth) {
                 flowType = FlowType.PKCE
                 scheme = "shopping"
@@ -43,5 +46,11 @@ object SupabaseModule {
     @Singleton
     fun provideSupabaseAuth(client: SupabaseClient): Auth {
         return client.auth
+    }
+
+    @Provides
+    @Singleton
+    fun provideSupabaseRealtime(client: SupabaseClient): Realtime {
+        return client.realtime
     }
 }

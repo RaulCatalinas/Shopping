@@ -15,7 +15,6 @@ import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -23,6 +22,7 @@ import androidx.compose.ui.platform.LocalResources
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
+import androidx.lifecycle.compose.LifecycleStartEffect
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.raulcatalinas.shopping.R
 import com.raulcatalinas.shopping.core.lists.viewmodels.ListsUiState
@@ -52,7 +52,12 @@ fun HomeScreen(
             ?.lists
             ?.isNotEmpty() == true
 
-    LaunchedEffect(Unit) { listsViewModel.loadLists() }
+    LifecycleStartEffect(Unit) {
+        listsViewModel.loadLists()
+        listsViewModel.startObservingLists()
+
+        onStopOrDispose { listsViewModel.stopObservingLists() }
+    }
 
     AppScaffold(
         floatingActionButton = {
