@@ -8,7 +8,7 @@ import com.raulcatalinas.shopping.backend.auth.repositories.constants.AUTH_REPOS
 import com.raulcatalinas.shopping.backend.auth.repositories.constants.GOOGLE_AUTH_REDIRECT_URL
 import com.raulcatalinas.shopping.backend.auth.repositories.constants.RESET_PASSWORD_REDIRECT_URL
 import com.raulcatalinas.shopping.backend.auth.repositories.constants.WHITE_SPACES_REGEX
-import com.raulcatalinas.shopping.backend.db.DbRepository
+import com.raulcatalinas.shopping.backend.db.ProfilesDataSource
 import com.raulcatalinas.shopping.shared.types.UserProfile
 import io.github.jan.supabase.SupabaseClient
 import io.github.jan.supabase.auth.Auth
@@ -23,7 +23,7 @@ import javax.inject.Inject
 
 class AuthRepository @Inject constructor(
     private val auth: Auth,
-    private val dbRepository: DbRepository,
+    private val profilesDataSource: ProfilesDataSource,
     private val supabaseClient: SupabaseClient,
     private val googleProvider: GoogleProvider
 ) {
@@ -62,7 +62,7 @@ class AuthRepository @Inject constructor(
                 username = username.trim()
             )
 
-            val createdProfile = dbRepository.createUserProfile(profile)
+            val createdProfile = profilesDataSource.createUserProfile(profile)
 
             if (createdProfile == null) {
                 Result.failure(
@@ -112,7 +112,7 @@ class AuthRepository @Inject constructor(
                     ?.replace(WHITE_SPACES_REGEX, "")
                     ?: "User_${userId.take(6)}"
 
-            dbRepository
+            profilesDataSource
                 .ensureUserProfile(usernameToSave)
                 .getOrElse {
                     auth.signOut()
@@ -140,14 +140,14 @@ class AuthRepository @Inject constructor(
                 ?.id
                 ?: throw IllegalStateException("User ID was not returned")
 
-        dbRepository.deleteAccount(userId)
+        profilesDataSource.deleteAccount(userId)
         auth.signOut()
     }
 
     fun getCurrentUser() = auth.currentUserOrNull()
 
     suspend fun checkUserNameExists(userName: String): Result<Boolean> {
-        return dbRepository.checkUserNameExists(userName)
+        return profilesDataSource.checkUserNameExists(userName)
     }
 
     suspend fun sentResetPasswordEmail(email: String) {

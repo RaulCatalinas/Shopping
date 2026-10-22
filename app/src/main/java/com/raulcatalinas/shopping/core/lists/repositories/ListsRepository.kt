@@ -1,7 +1,8 @@
 package com.raulcatalinas.shopping.core.lists.repositories
 
 import android.util.Log
-import com.raulcatalinas.shopping.backend.db.DbRepository
+import com.raulcatalinas.shopping.backend.db.ElementsDataSource
+import com.raulcatalinas.shopping.backend.db.ListsDataSource
 import com.raulcatalinas.shopping.backend.db.dto.ShoppingElementDto
 import com.raulcatalinas.shopping.backend.db.dto.ShoppingListDto
 import com.raulcatalinas.shopping.core.lists.repositories.constants.LISTS_REPOSITORY_TAG
@@ -16,15 +17,15 @@ import com.raulcatalinas.shopping.shared.types.UpdateShoppingElement
 import com.raulcatalinas.shopping.shared.types.UpdateShoppingList
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.catch
 import javax.inject.Inject
 
 class ListsRepository @Inject constructor(
-    private val dbRepository: DbRepository
+    private val listsDataSource: ListsDataSource,
+    private val elementsDataSource: ElementsDataSource
 ) {
     suspend fun getAllList(): Result<List<ShoppingListDto>> {
         return try {
-            Result.success(dbRepository.getAllList())
+            Result.success(listsDataSource.getAllList())
         } catch (e: CancellationException) {
             throw e
         } catch (e: Exception) {
@@ -35,7 +36,7 @@ class ListsRepository @Inject constructor(
 
     suspend fun getListById(id: String): Result<ShoppingListDto?> {
         return try {
-            Result.success(dbRepository.getListById(id))
+            Result.success(listsDataSource.getListById(id))
         } catch (e: CancellationException) {
             throw e
         } catch (e: Exception) {
@@ -46,7 +47,7 @@ class ListsRepository @Inject constructor(
 
     suspend fun getElementsByListId(listId: String): Result<List<ShoppingElementDto>> {
         return try {
-            Result.success(dbRepository.getShoppingElementsByListId(listId))
+            Result.success(elementsDataSource.getShoppingElementsByListId(listId))
         } catch (e: CancellationException) {
             throw e
         } catch (e: Exception) {
@@ -57,7 +58,7 @@ class ListsRepository @Inject constructor(
 
     suspend fun createList(listName: String): ShoppingList? {
         val createdList =
-            dbRepository.createList(
+            listsDataSource.createList(
                 NewShoppingList(listName.trim())
             )
 
@@ -75,14 +76,14 @@ class ListsRepository @Inject constructor(
             listId = listId
         )
 
-        val createdElement = dbRepository.createShoppingElement(shoppingElement)
+        val createdElement = elementsDataSource.createShoppingElement(shoppingElement)
 
         return createdElement?.toDomain()
     }
 
     suspend fun deleteList(id: String): Result<Unit> {
         return try {
-            if (!dbRepository.deleteList(id)) {
+            if (!listsDataSource.deleteList(id)) {
                 return Result.failure(IllegalStateException("The list was not deleted"))
             }
 
@@ -96,14 +97,14 @@ class ListsRepository @Inject constructor(
     }
 
     suspend fun updateList(id: String, name: String): ShoppingList? {
-        return dbRepository
+        return listsDataSource
             .updateList(id, UpdateShoppingList(name.trim()))
             ?.toDomain()
     }
 
     suspend fun deleteShoppingElement(id: String): Result<Unit> {
         return try {
-            if (!dbRepository.deleteShoppingElement(id)) {
+            if (!elementsDataSource.deleteShoppingElement(id)) {
                 return Result.failure(IllegalStateException("The element was not deleted"))
             }
 
@@ -121,7 +122,7 @@ class ListsRepository @Inject constructor(
         elementName: String,
         quantity: Int
     ): ShoppingElement? {
-        val updated = dbRepository.updateShoppingElement(
+        val updated = elementsDataSource.updateShoppingElement(
             elementId = elementId,
             changes = UpdateShoppingElement(name = elementName.trim(), quantity = quantity)
         )
@@ -131,7 +132,7 @@ class ListsRepository @Inject constructor(
 
     suspend fun setElementChecked(id: String, checked: Boolean): Result<Unit> {
         return try {
-            if (!dbRepository.setElementChecked(id, checked)) {
+            if (!elementsDataSource.setElementChecked(id, checked)) {
                 return Result.failure(IllegalStateException("The element was not updated"))
             }
 
@@ -145,29 +146,11 @@ class ListsRepository @Inject constructor(
     }
 
     fun observeElementChanges(listId: String): Flow<ElementChange> {
-        return dbRepository
+        return elementsDataSource
             .observeElementChanges(listId)
-            .catch { e ->
-                if (e is CancellationException) throw e
-
-                Log.e(
-                    LISTS_REPOSITORY_TAG,
-                    "Realtime error on list $listId: ${e.message}",
-                    e
-                )
-            }
     }
 
     fun observeListChanges(): Flow<ListChange> {
-        return dbRepository.observeListChanges()
-            .catch { e ->
-                if (e is CancellationException) throw e
-
-                Log.e(
-                    LISTS_REPOSITORY_TAG,
-                    "Realtime error on lists: ${e.message}",
-                    e
-                )
-            }
+        return listsDataSource.observeListChanges()
     }
 }
