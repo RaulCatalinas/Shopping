@@ -119,4 +119,19 @@
     <string name="edit_item_title">Editar producto</string>
     <string name="edit_btn">Editar</string>
     <string name="update_shopping_element_error">No se pudieron guardar los cambios. Inténtalo más tarde.</string>
+
+    <!-- Invitations -->
+    <string name="invite_title">Invitar personas</string>
+    <string name="invite_description">Cualquiera que abra el enlace podrá unirse a la lista y editarla.</string>
+    <string name="invite_duration_label">El enlace funcionará durante</string>
+    <string name="invite_duration_one_day">1 día</string>
+    <string name="invite_duration_one_week">7 días</string>
+    <string name="invite_duration_one_month">30 días</string>
+    <string name="invite_share_btn">Compartir enlace</string>
+    <string name="invite_share_message">Únete a mi lista de la compra “%1$s” en Shopping: %2$s</string>
+    <string name="invite_create_error">No se pudo crear el enlace. Inténtalo más tarde.</string>
+    <string name="invite_not_allowed_error">No puedes invitar a esta lista.</string>
+    <string name="invite_invalid_error">Este enlace ha caducado o ya se ha usado. Pide uno nuevo.</string>
+    <string name="invite_accept_error">No se pudo unir a la lista. Inténtalo más tarde.</string>
+    <string name="invite_not_a_link_error">Eso no parece un enlace de invitación.</string>
 </resources>

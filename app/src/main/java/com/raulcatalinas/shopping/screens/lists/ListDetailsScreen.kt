@@ -44,11 +44,11 @@ import com.raulcatalinas.shopping.R
 import com.raulcatalinas.shopping.core.lists.viewmodels.ListDetailUiState
 import com.raulcatalinas.shopping.core.lists.viewmodels.ListsViewModel
 import com.raulcatalinas.shopping.screens.lists.components.ItemFormSheet
+import com.raulcatalinas.shopping.shared.components.ActionsMenu
 import com.raulcatalinas.shopping.shared.components.AppCheckbox
 import com.raulcatalinas.shopping.shared.components.AppScaffold
 import com.raulcatalinas.shopping.shared.components.Budget
 import com.raulcatalinas.shopping.shared.components.ConfirmDialog
-import com.raulcatalinas.shopping.shared.components.EditDeleteMenu
 import com.raulcatalinas.shopping.shared.components.StateMessage
 import com.raulcatalinas.shopping.shared.components.StickySectionHeader
 import com.raulcatalinas.shopping.shared.extensions.verticalScrollbar
@@ -349,7 +349,7 @@ private fun ElementRow(
                             HorizontalDivider()
                         }
 
-                        EditDeleteMenu(
+                        ActionsMenu(
                             expanded = menuExpanded,
                             onDismiss = { menuExpanded = false },
                             onEdit = openEdit,

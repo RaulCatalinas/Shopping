@@ -25,21 +25,27 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalHapticFeedback
+import androidx.compose.ui.platform.LocalResources
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import com.raulcatalinas.shopping.R
+import com.raulcatalinas.shopping.core.invitations.viewmodels.InvitationsViewModel
 import com.raulcatalinas.shopping.screens.lists.components.EditListSheet
+import com.raulcatalinas.shopping.screens.lists.components.InviteSheet
+import com.raulcatalinas.shopping.shared.components.ActionsMenu
 import com.raulcatalinas.shopping.shared.components.Budget
 import com.raulcatalinas.shopping.shared.components.ConfirmDialog
-import com.raulcatalinas.shopping.shared.components.EditDeleteMenu
 import com.raulcatalinas.shopping.shared.constants.MOBILE_PHONE_UNI_CODE
 import com.raulcatalinas.shopping.shared.extensions.toEmoji
 import com.raulcatalinas.shopping.shared.extensions.verticalScrollbar
 import com.raulcatalinas.shopping.shared.types.ShoppingList
+import com.raulcatalinas.shopping.shared.utils.LocalSnackbarController
 
 @Composable
 fun HomeWithLists(
+    invitationsViewModel: InvitationsViewModel = hiltViewModel(),
     paddingValues: PaddingValues,
     shoppingLists: List<ShoppingList>,
     isSaving: Boolean,
@@ -47,6 +53,8 @@ fun HomeWithLists(
     onListRename: (listId: String, name: String, onSaved: () -> Unit) -> Unit,
     onListDelete: (String) -> Unit
 ) {
+    val snackbar = LocalSnackbarController.current
+    val resources = LocalResources.current
     val haptic = LocalHapticFeedback.current
 
     val listState = rememberLazyListState()
@@ -153,13 +161,32 @@ fun HomeWithLists(
                                     }
                                 }
 
-                                EditDeleteMenu(
-                                    expanded = menuExpanded,
-                                    onDismiss = { menuExpanded = false },
-                                    editText = stringResource(R.string.rename_btn),
-                                    onEdit = openRename,
-                                    onDelete = openDelete
-                                )
+                                InviteSheet(
+                                    listName = list.name,
+                                    trigger = { openCreateInvite ->
+                                        ActionsMenu(
+                                            expanded = menuExpanded,
+                                            onDismiss = { menuExpanded = false },
+                                            editText = stringResource(R.string.rename_btn),
+                                            onEdit = openRename,
+                                            onInvitePeople = openCreateInvite,
+                                            onDelete = openDelete
+                                        )
+                                    }
+                                ) { inviteDuration, onResult ->
+                                    invitationsViewModel.createInvitation(
+                                        listId = list.id,
+                                        inviteDuration = inviteDuration
+                                    ) { link, errorRes ->
+                                        errorRes?.let {
+                                            snackbar.show(
+                                                resources.getString(it)
+                                            )
+                                        }
+
+                                        onResult(link)
+                                    }
+                                }
                             }
                         }
                     )

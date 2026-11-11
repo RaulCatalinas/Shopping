@@ -38,6 +38,16 @@
                     android:scheme="shopping"
                     android:host="reset-password" />
             </intent-filter>
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+
+                <data
+                    android:scheme="shopping"
+                    android:host="join" />
+            </intent-filter>
         </activity>
 
         <service

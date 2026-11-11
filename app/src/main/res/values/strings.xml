@@ -120,4 +120,19 @@
     <string name="edit_item_title">Edit item</string>
     <string name="edit_btn">Edit</string>
     <string name="update_shopping_element_error">Couldn\'t save the changes. Try again later.</string>
+
+    <!-- Invitations -->
+    <string name="invite_title">Invite people</string>
+    <string name="invite_description">Anyone who opens the link can join this list and edit it.</string>
+    <string name="invite_duration_label">The link will work for</string>
+    <string name="invite_duration_one_day">1 day</string>
+    <string name="invite_duration_one_week">7 days</string>
+    <string name="invite_duration_one_month">30 days</string>
+    <string name="invite_share_btn">Share link</string>
+    <string name="invite_share_message">Join my shopping list “%1$s” in Shopping: %2$s</string>
+    <string name="invite_create_error">Couldn\'t create the link. Try again later.</string>
+    <string name="invite_not_allowed_error">You can\'t invite people to this list.</string>
+    <string name="invite_invalid_error">This link has expired or was already used. Ask for a new one.</string>
+    <string name="invite_accept_error">Couldn\'t join the list. Try again later.</string>
+    <string name="invite_not_a_link_error">That doesn\'t look like an invitation link.</string>
 </resources>
